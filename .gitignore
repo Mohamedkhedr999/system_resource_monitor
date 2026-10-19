@@ -1,0 +1,11 @@
+# Bazel generated outputs
+/bazel-*
+
+# C++ build artifacts
+*.o
+*.a
+*.so
+
+# Editor settings
+.vscode/
+.idea/
