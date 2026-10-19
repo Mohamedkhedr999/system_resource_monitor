@@ -1,0 +1,9 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "proc_cpu_reader",
+    srcs = ["proc_cpu_reader.cpp"],
+    hdrs = ["proc_cpu_reader.hpp"],
+    deps = ["//core/cpu:cpu"],
+    visibility = ["//visibility:public"],
+)
