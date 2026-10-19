@@ -1,0 +1,12 @@
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  cppcoreguidelines-*,
+  concurrency-*,
+  -modernize-use-trailing-return-type
+
+WarningsAsErrors: '*'
+HeaderFilterRegex: '^(src|lib|core|app|platform|tests)/.*'
+FormatStyle: file
