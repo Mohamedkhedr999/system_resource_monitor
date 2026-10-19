@@ -1,10 +1,10 @@
-#ifndef SYSTEM_RESOURCE_MONITOR_CORE_INTERFACES_CPU_READER_HPP
-#define SYSTEM_RESOURCE_MONITOR_CORE_INTERFACES_CPU_READER_HPP
+#ifndef SYSTEM_RESOURCE_MONITOR_CORE_CPU_INTERFACES_CPU_READER_HPP
+#define SYSTEM_RESOURCE_MONITOR_CORE_CPU_INTERFACES_CPU_READER_HPP
 
 #include <expected>
 #include <system_error>
 
-#include "core/cpu_stats.hpp"
+#include "core/cpu/cpu_stats.hpp"
 
 namespace pulse {
 
