@@ -1,6 +1,16 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
+    name = "cpu_usage_calculator_test",
+    size = "small",
+    srcs = ["cpu_usage_calculator_test.cpp"],
+    deps = [
+        "//core/cpu",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "proc_cpu_reader_test",
     size = "small",
     srcs = ["proc_cpu_reader_test.cpp"],

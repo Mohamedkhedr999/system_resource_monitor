@@ -2,10 +2,14 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
     name = "cpu",
-    srcs = ["cpu_stats_parser.cpp"],
+    srcs = [
+        "cpu_stats_parser.cpp",
+        "cpu_usage_calculator.cpp",
+    ],
     hdrs = [
         "cpu_stats.hpp",
         "cpu_stats_parser.hpp",
+        "cpu_usage_calculator.hpp",
         "interfaces/cpu_reader.hpp",
     ],
     visibility = ["//visibility:public"],
