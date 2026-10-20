@@ -1,16 +1,48 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
-    name = "cpu",
-    srcs = [
-        "cpu_stats_parser.cpp",
-        "cpu_usage_calculator.cpp",
-    ],
-    hdrs = [
-        "cpu_stats.hpp",
-        "cpu_stats_parser.hpp",
-        "cpu_usage_calculator.hpp",
-        "interfaces/cpu_reader.hpp",
-    ],
+    name = "cpu_stats",
+    hdrs = ["cpu_stats.hpp"],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cpu_reader",
+    hdrs = ["interfaces/cpu_reader.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":cpu_stats"],
+)
+
+cc_library(
+    name = "cpu_monitor_interface",
+    hdrs = ["interfaces/cpu_monitor.hpp"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cpu_stats_parser",
+    srcs = ["cpu_stats_parser.cpp"],
+    hdrs = ["cpu_stats_parser.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":cpu_stats"],
+)
+
+cc_library(
+    name = "cpu_usage_calculator",
+    srcs = ["cpu_usage_calculator.cpp"],
+    hdrs = ["cpu_usage_calculator.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":cpu_stats"],
+)
+
+cc_library(
+    name = "cpu_monitor",
+    srcs = ["cpu_monitor.cpp"],
+    hdrs = ["cpu_monitor.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":cpu_monitor_interface",
+        ":cpu_reader",
+        ":cpu_usage_calculator",
+    ],
 )
