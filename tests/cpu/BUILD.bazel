@@ -1,11 +1,23 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
+    name = "proc_cpu_reader_test",
+    size = "small",
+    srcs = ["proc_cpu_reader_test.cpp"],
+    deps = [
+        "//core/cpu",
+        "//platform/linux:proc_cpu_reader",
+        "//tests/mocks:mock_file_reader",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "cpu_stats_parser_test",
     size = "small",
     srcs = ["cpu_stats_parser_test.cpp"],
     deps = [
-        "//core/cpu:cpu",
+        "//core/cpu",
         "@googletest//:gtest_main",
     ],
 )

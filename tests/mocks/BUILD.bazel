@@ -1,0 +1,23 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "mock_cpu_reader",
+    testonly = True,
+    hdrs = ["mock_cpu_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/cpu",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_file_reader",
+    testonly = True,
+    hdrs = ["mock_file_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/io:file_reader",
+        "@googletest//:gtest",
+    ],
+)

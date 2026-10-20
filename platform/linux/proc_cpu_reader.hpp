@@ -2,19 +2,23 @@
 #define SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_CPU_READER_HPP
 
 #include <filesystem>
+#include <memory>
+
 #include "core/cpu/interfaces/cpu_reader.hpp"
+#include "core/io/interfaces/file_reader.hpp"
 
 namespace pulse {
 
 class ProcCpuReader final : public ICpuReader {
-public:
-    explicit ProcCpuReader(
-        std::filesystem::path path = "/proc/stat");
+   public:
+    explicit ProcCpuReader(std::shared_ptr<IFileReader> file_reader,
+                           std::filesystem::path path = "/proc/stat");
 
     [[nodiscard]]
     std::expected<CpuStats, CpuReadError> read() const override;
 
-private:
+   private:
+    std::shared_ptr<IFileReader> file_reader_;
     std::filesystem::path path_;
 };
 

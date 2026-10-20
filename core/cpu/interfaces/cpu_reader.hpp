@@ -9,11 +9,7 @@
 
 namespace pulse {
 
-enum class CpuReadError : std::uint8_t{
-    FileOpenFailed,
-    FileReadFailed,
-    InvalidData
-};
+enum class CpuReadError : std::uint8_t { FileOpenFailed, FileReadFailed, InvalidData };
 
 class ICpuReader {
    public:

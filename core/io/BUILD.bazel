@@ -1,0 +1,7 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "file_reader",
+    hdrs = ["interfaces/file_reader.hpp"],
+    visibility = ["//visibility:public"],
+)
