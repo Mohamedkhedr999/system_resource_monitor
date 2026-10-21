@@ -1,0 +1,18 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "monitoring_service",
+    srcs = ["monitoring_service.cpp"],
+    hdrs = ["monitoring_service.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":metrics_presenter",
+        "//core/cpu:cpu_monitor_interface",
+    ],
+)
+
+cc_library(
+    name = "metrics_presenter",
+    hdrs = ["interfaces/metrics_presenter.hpp"],
+    visibility = ["//visibility:public"],
+)

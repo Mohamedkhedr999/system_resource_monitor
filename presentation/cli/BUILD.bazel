@@ -1,0 +1,9 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "cli_metrics_presenter",
+    srcs = ["cli_metrics_presenter.cpp"],
+    hdrs = ["cli_metrics_presenter.hpp"],
+    visibility = ["//visibility:public"],
+    deps = ["//core/monitoring:metrics_presenter"],
+)

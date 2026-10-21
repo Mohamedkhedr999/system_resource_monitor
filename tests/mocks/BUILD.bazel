@@ -1,6 +1,17 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "mock_metrics_presenter",
+    testonly = True,
+    hdrs = ["mock_metrics_presenter.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/monitoring:metrics_presenter",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "mock_cpu_monitor",
     testonly = True,
     hdrs = ["mock_cpu_monitor.hpp"],
