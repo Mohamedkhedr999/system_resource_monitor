@@ -1,0 +1,15 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "application_factory",
+    srcs = ["application_factory.cpp"],
+    hdrs = ["application_factory.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/cpu:cpu_monitor",
+        "//core/monitoring:monitoring_service",
+        "//platform/linux:file_reader_impl",
+        "//platform/linux:proc_cpu_reader",
+        "//presentation/cli:cli_metrics_presenter",
+    ],
+)

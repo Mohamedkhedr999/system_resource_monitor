@@ -1,0 +1,11 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+cc_test(
+    name = "application_factory_test",
+    size = "small",
+    srcs = ["application_factory_test.cpp"],
+    deps = [
+        "//app:application_factory",
+        "@googletest//:gtest_main",
+    ],
+)
