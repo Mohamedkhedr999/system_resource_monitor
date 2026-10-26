@@ -1,6 +1,17 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "pulse_application",
+    srcs = ["pulse_application.cpp"],
+    hdrs = ["pulse_application.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/cpu:cpu_monitor_interface",
+        "//core/monitoring:monitoring_service_interface",
+    ],
+)
+
+cc_library(
     name = "application_factory",
     srcs = ["application_factory.cpp"],
     hdrs = ["application_factory.hpp"],
@@ -8,6 +19,7 @@ cc_library(
     deps = [
         "//core/cpu:cpu_monitor",
         "//core/monitoring:monitoring_service",
+        "//core/monitoring:monitoring_service_interface",
         "//platform/linux:file_reader_impl",
         "//platform/linux:proc_cpu_reader",
         "//presentation/cli:cli_metrics_presenter",

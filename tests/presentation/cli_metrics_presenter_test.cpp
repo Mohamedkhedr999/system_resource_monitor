@@ -14,7 +14,7 @@ TEST(CliMetricsPresenterTest, PresentsFractionalUsageWithLabelUnitAndNewline) {
 
     presenter.presentCpuUsage(kFractionalUsage);
 
-    EXPECT_EQ(output.str(), "CPU Usage: 42.5%\n");
+    EXPECT_EQ(output.str(), "CPU Usage: 42.50%\n");
 }
 
 TEST(CliMetricsPresenterTest, PresentsZeroUsage) {
@@ -23,7 +23,7 @@ TEST(CliMetricsPresenterTest, PresentsZeroUsage) {
 
     presenter.presentCpuUsage(0.0);
 
-    EXPECT_EQ(output.str(), "CPU Usage: 0%\n");
+    EXPECT_EQ(output.str(), "CPU Usage: 0.00%\n");
 }
 
 TEST(CliMetricsPresenterTest, PresentsFullUsage) {
@@ -32,7 +32,7 @@ TEST(CliMetricsPresenterTest, PresentsFullUsage) {
 
     presenter.presentCpuUsage(100.0);
 
-    EXPECT_EQ(output.str(), "CPU Usage: 100%\n");
+    EXPECT_EQ(output.str(), "CPU Usage: 100.00%\n");
 }
 
 TEST(CliMetricsPresenterTest, AppendsSuccessiveSamplesOnSeparateLines) {
@@ -45,7 +45,7 @@ TEST(CliMetricsPresenterTest, AppendsSuccessiveSamplesOnSeparateLines) {
     presenter.presentCpuUsage(kFirstSample);
     presenter.presentCpuUsage(kSecondSample);
 
-    EXPECT_EQ(output.str(), "Existing output\nCPU Usage: 25%\nCPU Usage: 75.5%\n");
+    EXPECT_EQ(output.str(), "Existing output\nCPU Usage: 25.00%\nCPU Usage: 75.50%\n");
 }
 
 }  // namespace

@@ -6,17 +6,17 @@
 
 #include "core/cpu/interfaces/cpu_monitor.hpp"
 #include "core/monitoring/interfaces/metrics_presenter.hpp"
+#include "core/monitoring/interfaces/monitoring_service.hpp"
 
 namespace pulse {
 
-class MonitoringService {
+class MonitoringService final : public IMonitoringService {
    public:
     MonitoringService(std::unique_ptr<ICpuMonitor> cpu_monitor,
                       std::unique_ptr<IMetricsPresenter> presenter);
 
-    // Presents available usage; warm-up succeeds, sampling errors are returned.
     [[nodiscard]]
-    std::expected<void, CpuMonitorError> tick();
+    std::expected<void, CpuMonitorError> tick() override;
 
    private:
     std::unique_ptr<ICpuMonitor> cpu_monitor_;
