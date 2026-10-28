@@ -1,9 +1,33 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "memory_usage",
+    hdrs = ["memory_usage.hpp"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "memory_monitor",
+    srcs = ["memory_monitor.cpp"],
+    hdrs = ["memory_monitor.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":memory_reader",
+        ":memory_usage",
+    ],
+)
+
+cc_library(
     name = "memory_stats",
     hdrs = ["memory_stats.hpp"],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "memory_reader",
+    hdrs = ["interfaces/memory_reader.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":memory_stats"],
 )
 
 cc_library(

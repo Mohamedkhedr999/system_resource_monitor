@@ -1,6 +1,17 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "mock_memory_reader",
+    testonly = True,
+    hdrs = ["mock_memory_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/memory:memory_reader",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "mock_monitoring_service",
     testonly = True,
     hdrs = ["mock_monitoring_service.hpp"],
