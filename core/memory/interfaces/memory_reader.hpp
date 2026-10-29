@@ -7,13 +7,10 @@
 
 namespace pulse {
 
-enum class MemoryReadError {
-    FileReadFailed,
-    InvalidData
-};
+enum class MemoryReadError { FileReadFailed, InvalidData };
 
 class IMemoryReader {
-public:
+   public:
     virtual ~IMemoryReader() = default;
 
     [[nodiscard]]

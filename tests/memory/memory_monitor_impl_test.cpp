@@ -1,4 +1,4 @@
-#include "core/memory/memory_monitor.hpp"
+#include "core/memory/memory_monitor_impl.hpp"
 
 #include <array>
 #include <cstdint>
@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "core/memory/interfaces/memory_monitor.hpp"
 #include "core/memory/interfaces/memory_reader.hpp"
 #include "core/memory/memory_stats.hpp"
 #include "gmock/gmock.h"
@@ -19,20 +20,20 @@ namespace {
 
 using MemoryReadResult = std::expected<MemoryStats, MemoryReadError>;
 
-class MemoryMonitorTest : public testing::Test {
+class MemoryMonitorImplTest : public testing::Test {
    protected:
     std::unique_ptr<testing::StrictMock<MockMemoryReader>> reader_ =
         std::make_unique<testing::StrictMock<MockMemoryReader>>();
 };
 
-TEST(MemoryMonitorConstructorTest, RejectsNullReader) {
-    EXPECT_THROW((void)MemoryMonitor(nullptr), std::invalid_argument);
+TEST(MemoryMonitorImplConstructorTest, RejectsNullReader) {
+    EXPECT_THROW((void)MemoryMonitorImpl(nullptr), std::invalid_argument);
 }
 
-TEST_F(MemoryMonitorTest, FirstSampleReturnsUsedMemoryTotalAndFractionalPercentage) {
+TEST_F(MemoryMonitorImplTest, FirstSampleReturnsUsedMemoryTotalAndFractionalPercentage) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(MemoryReadResult(MemoryStats{.total_kb = 8, .available_kb = 5})));
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     const auto result = monitor.sample();
 
@@ -42,11 +43,11 @@ TEST_F(MemoryMonitorTest, FirstSampleReturnsUsedMemoryTotalAndFractionalPercenta
     EXPECT_DOUBLE_EQ(result->percentage, 37.5);
 }
 
-TEST_F(MemoryMonitorTest, ReturnsZeroUsageWhenAllMemoryIsAvailable) {
+TEST_F(MemoryMonitorImplTest, ReturnsZeroUsageWhenAllMemoryIsAvailable) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(
             testing::Return(MemoryReadResult(MemoryStats{.total_kb = 100, .available_kb = 100})));
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     const auto result = monitor.sample();
 
@@ -56,12 +57,12 @@ TEST_F(MemoryMonitorTest, ReturnsZeroUsageWhenAllMemoryIsAvailable) {
     EXPECT_DOUBLE_EQ(result->percentage, 0.0);
 }
 
-TEST_F(MemoryMonitorTest, HandlesMaximumCountersWithoutOverflow) {
+TEST_F(MemoryMonitorImplTest, HandlesMaximumCountersWithoutOverflow) {
     constexpr auto kMaximum = std::numeric_limits<std::uint64_t>::max();
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(
             MemoryReadResult(MemoryStats{.total_kb = kMaximum, .available_kb = 0})));
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     const auto result = monitor.sample();
 
@@ -71,12 +72,12 @@ TEST_F(MemoryMonitorTest, HandlesMaximumCountersWithoutOverflow) {
     EXPECT_DOUBLE_EQ(result->percentage, 100.0);
 }
 
-TEST_F(MemoryMonitorTest, MapsAllReaderErrorsToReadFailed) {
+TEST_F(MemoryMonitorImplTest, MapsAllReaderErrorsToReadFailed) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(
             testing::Return(MemoryReadResult(std::unexpected(MemoryReadError::FileReadFailed))))
         .WillOnce(testing::Return(MemoryReadResult(std::unexpected(MemoryReadError::InvalidData))));
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     for (const auto error :
          std::array{MemoryReadError::FileReadFailed, MemoryReadError::InvalidData}) {
@@ -88,14 +89,14 @@ TEST_F(MemoryMonitorTest, MapsAllReaderErrorsToReadFailed) {
     }
 }
 
-TEST_F(MemoryMonitorTest, RejectsZeroTotalAndAvailableGreaterThanTotal) {
+TEST_F(MemoryMonitorImplTest, RejectsZeroTotalAndAvailableGreaterThanTotal) {
     constexpr std::array invalid_stats{
         MemoryStats{.total_kb = 0, .available_kb = 0},
         MemoryStats{.total_kb = 0, .available_kb = 1},
         MemoryStats{.total_kb = 100, .available_kb = 101},
     };
     auto& reader = *reader_;
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     for (const auto stats : invalid_stats) {
         SCOPED_TRACE(stats.total_kb);
@@ -109,13 +110,13 @@ TEST_F(MemoryMonitorTest, RejectsZeroTotalAndAvailableGreaterThanTotal) {
     }
 }
 
-TEST_F(MemoryMonitorTest, UsesFreshStatsOnEverySample) {
+TEST_F(MemoryMonitorImplTest, UsesFreshStatsOnEverySample) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(
             testing::Return(MemoryReadResult(MemoryStats{.total_kb = 100, .available_kb = 40})))
         .WillOnce(
             testing::Return(MemoryReadResult(MemoryStats{.total_kb = 200, .available_kb = 150})));
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     const auto first = monitor.sample();
     const auto second = monitor.sample();
@@ -130,14 +131,14 @@ TEST_F(MemoryMonitorTest, UsesFreshStatsOnEverySample) {
     EXPECT_DOUBLE_EQ(second->percentage, 25.0);
 }
 
-TEST_F(MemoryMonitorTest, RecoversAfterReadFailureAndInvalidStats) {
+TEST_F(MemoryMonitorImplTest, RecoversAfterReadFailureAndInvalidStats) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(
             testing::Return(MemoryReadResult(std::unexpected(MemoryReadError::FileReadFailed))))
         .WillOnce(testing::Return(MemoryReadResult(MemoryStats{})))
         .WillOnce(
             testing::Return(MemoryReadResult(MemoryStats{.total_kb = 100, .available_kb = 25})));
-    MemoryMonitor monitor(std::move(reader_));
+    MemoryMonitorImpl monitor(std::move(reader_));
 
     const auto failed_read = monitor.sample();
     ASSERT_FALSE(failed_read.has_value());

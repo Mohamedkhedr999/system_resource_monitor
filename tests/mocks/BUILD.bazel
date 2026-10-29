@@ -65,3 +65,14 @@ cc_library(
         "@googletest//:gtest",
     ],
 )
+
+cc_library(
+    name = "mock_memory_monitor",
+    testonly = True,
+    hdrs = ["mock_memory_monitor.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/memory:memory_monitor_interface",
+        "@googletest//:gtest",
+    ],
+)

@@ -1,5 +1,5 @@
-#ifndef SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_CPU_READER_HPP
-#define SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_CPU_READER_HPP
+#ifndef SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_CPU_READER_IMPL_HPP
+#define SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_CPU_READER_IMPL_HPP
 
 #include <filesystem>
 #include <memory>
@@ -9,10 +9,10 @@
 
 namespace pulse {
 
-class ProcCpuReader final : public ICpuReader {
+class ProcCpuReaderImpl final : public ICpuReader {
    public:
-    explicit ProcCpuReader(std::shared_ptr<IFileReader> file_reader,
-                           std::filesystem::path path = "/proc/stat");
+    explicit ProcCpuReaderImpl(std::shared_ptr<IFileReader> file_reader,
+                               std::filesystem::path path = "/proc/stat");
 
     [[nodiscard]]
     std::expected<CpuStats, CpuReadError> read() const override;

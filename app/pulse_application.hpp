@@ -6,7 +6,6 @@
 #include <memory>
 #include <stop_token>
 
-#include "core/cpu/interfaces/cpu_monitor.hpp"
 #include "core/monitoring/interfaces/monitoring_service.hpp"
 
 namespace pulse {
@@ -18,7 +17,7 @@ class PulseApplication {
 
     // Blocks until stopped or sampling fails. Call from only one thread at a time.
     [[nodiscard]]
-    std::expected<void, CpuMonitorError> run(const std::stop_token& stop_token);
+    std::expected<void, MonitoringError> run(const std::stop_token& stop_token);
 
    private:
     std::unique_ptr<IMonitoringService> monitoring_service_;

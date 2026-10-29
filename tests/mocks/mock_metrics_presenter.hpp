@@ -9,6 +9,7 @@ namespace pulse {
 class MockMetricsPresenter : public IMetricsPresenter {
    public:
     MOCK_METHOD(void, presentCpuUsage, (double percentage), (override));
+    MOCK_METHOD(void, presentMemoryUsage, (const MemoryUsage& usage), (override));
 };
 
 }  // namespace pulse

@@ -6,7 +6,6 @@ cc_library(
     hdrs = ["pulse_application.hpp"],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/cpu:cpu_monitor_interface",
         "//core/monitoring:monitoring_service_interface",
     ],
 )
@@ -17,11 +16,13 @@ cc_library(
     hdrs = ["application_factory.hpp"],
     visibility = ["//visibility:public"],
     deps = [
-        "//core/cpu:cpu_monitor",
-        "//core/monitoring:monitoring_service",
+        "//core/cpu:cpu_monitor_impl",
+        "//core/memory:memory_monitor_impl",
+        "//core/monitoring:monitoring_service_impl",
         "//core/monitoring:monitoring_service_interface",
         "//platform/linux:file_reader_impl",
-        "//platform/linux:proc_cpu_reader",
-        "//presentation/cli:cli_metrics_presenter",
+        "//platform/linux:proc_cpu_reader_impl",
+        "//platform/linux:proc_memory_reader_impl",
+        "//presentation/cli:cli_metrics_presenter_impl",
     ],
 )

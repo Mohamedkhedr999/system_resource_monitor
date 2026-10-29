@@ -10,7 +10,7 @@ namespace pulse {
 
 class MockMonitoringService : public IMonitoringService {
    public:
-    MOCK_METHOD((std::expected<void, CpuMonitorError>), tick, (), (override));
+    MOCK_METHOD((std::expected<void, MonitoringError>), tick, (), (override));
 };
 
 }  // namespace pulse

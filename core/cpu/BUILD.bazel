@@ -36,9 +36,9 @@ cc_library(
 )
 
 cc_library(
-    name = "cpu_monitor",
-    srcs = ["cpu_monitor.cpp"],
-    hdrs = ["cpu_monitor.hpp"],
+    name = "cpu_monitor_impl",
+    srcs = ["cpu_monitor_impl.cpp"],
+    hdrs = ["cpu_monitor_impl.hpp"],
     visibility = ["//visibility:public"],
     deps = [
         ":cpu_monitor_interface",

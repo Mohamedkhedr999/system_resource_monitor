@@ -4,18 +4,18 @@ cc_library(
     name = "monitoring_service_interface",
     hdrs = ["interfaces/monitoring_service.hpp"],
     visibility = ["//visibility:public"],
-    deps = ["//core/cpu:cpu_monitor_interface"],
 )
 
 cc_library(
-    name = "monitoring_service",
-    srcs = ["monitoring_service.cpp"],
-    hdrs = ["monitoring_service.hpp"],
+    name = "monitoring_service_impl",
+    srcs = ["monitoring_service_impl.cpp"],
+    hdrs = ["monitoring_service_impl.hpp"],
     visibility = ["//visibility:public"],
     deps = [
         ":metrics_presenter",
         ":monitoring_service_interface",
         "//core/cpu:cpu_monitor_interface",
+        "//core/memory:memory_monitor_interface",
     ],
 )
 
@@ -23,4 +23,5 @@ cc_library(
     name = "metrics_presenter",
     hdrs = ["interfaces/metrics_presenter.hpp"],
     visibility = ["//visibility:public"],
+    deps = ["//core/memory:memory_usage"],
 )

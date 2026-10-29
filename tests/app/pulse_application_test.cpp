@@ -9,7 +9,6 @@
 #include <thread>
 #include <utility>
 
-#include "core/cpu/interfaces/cpu_monitor.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "tests/mocks/mock_monitoring_service.hpp"
@@ -17,7 +16,7 @@
 namespace pulse {
 namespace {
 
-using TickResult = std::expected<void, CpuMonitorError>;
+using TickResult = std::expected<void, MonitoringError>;
 
 class PulseApplicationTest : public testing::Test {
    protected:
@@ -87,7 +86,7 @@ TEST_F(PulseApplicationTest, StopRequestFinishesRunBeforeLongIntervalExpires) {
 }
 
 class PulseApplicationErrorTest : public PulseApplicationTest,
-                                  public testing::WithParamInterface<CpuMonitorError> {};
+                                  public testing::WithParamInterface<MonitoringError> {};
 
 TEST_P(PulseApplicationErrorTest, ReturnsTickErrorAndStopsSampling) {
     EXPECT_CALL(*service_, tick())
@@ -102,8 +101,10 @@ TEST_P(PulseApplicationErrorTest, ReturnsTickErrorAndStopsSampling) {
 }
 
 INSTANTIATE_TEST_SUITE_P(SamplingErrors, PulseApplicationErrorTest,
-                         testing::Values(CpuMonitorError::ReadFailed,
-                                         CpuMonitorError::CalculationFailed));
+                         testing::Values(MonitoringError::CpuReadFailed,
+                                         MonitoringError::CpuCalculationFailed,
+                                         MonitoringError::MemoryReadFailed,
+                                         MonitoringError::MemoryInvalidStats));
 
 }  // namespace
 }  // namespace pulse

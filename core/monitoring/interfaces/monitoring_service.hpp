@@ -1,19 +1,27 @@
 #ifndef SYSTEM_RESOURCE_MONITOR_CORE_MONITORING_INTERFACES_MONITORING_SERVICE_HPP
 #define SYSTEM_RESOURCE_MONITOR_CORE_MONITORING_INTERFACES_MONITORING_SERVICE_HPP
 
+#include <cstdint>
 #include <expected>
 
-#include "core/cpu/interfaces/cpu_monitor.hpp"
-
 namespace pulse {
+
+enum class MonitoringError : std::uint8_t {
+    CpuReadFailed,
+    CpuCalculationFailed,
+    MemoryReadFailed,
+    MemoryInvalidStats
+};
 
 class IMonitoringService {
    public:
     virtual ~IMonitoringService() = default;
 
-    // Presents available usage; warm-up succeeds, sampling errors are returned.
+    // Prints memory usage and CPU usage when available.
+    // The first tick prints only memory because CPU usage needs two samples.
+    // If either monitor fails, returns an error without printing any metrics.
     [[nodiscard]]
-    virtual std::expected<void, CpuMonitorError> tick() = 0;
+    virtual std::expected<void, MonitoringError> tick() = 0;
 };
 
 }  // namespace pulse

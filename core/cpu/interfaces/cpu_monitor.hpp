@@ -7,18 +7,14 @@
 
 namespace pulse {
 
-enum class CpuMonitorError : std::uint8_t {
-    ReadFailed,
-    CalculationFailed
-};
+enum class CpuMonitorError : std::uint8_t { ReadFailed, CalculationFailed };
 
 class ICpuMonitor {
-public:
+   public:
     virtual ~ICpuMonitor() = default;
 
     [[nodiscard]]
-    virtual std::expected<std::optional<double>, CpuMonitorError>
-    sample() = 0;
+    virtual std::expected<std::optional<double>, CpuMonitorError> sample() = 0;
 };
 
 }  // namespace pulse

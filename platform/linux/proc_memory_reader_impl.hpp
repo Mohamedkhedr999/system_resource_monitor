@@ -1,5 +1,5 @@
-#ifndef SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_MEMORY_READER_HPP
-#define SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_MEMORY_READER_HPP
+#ifndef SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_MEMORY_READER_IMPL_HPP
+#define SYSTEM_RESOURCE_MONITOR_PLATFORM_LINUX_PROC_MEMORY_READER_IMPL_HPP
 
 #include <expected>
 #include <memory>
@@ -10,10 +10,10 @@
 
 namespace pulse {
 
-class ProcMemoryReader final : public IMemoryReader {
+class ProcMemoryReaderImpl final : public IMemoryReader {
    public:
-    explicit ProcMemoryReader(std::shared_ptr<IFileReader> file_reader,
-                              std::string path = "/proc/meminfo");
+    explicit ProcMemoryReaderImpl(std::shared_ptr<IFileReader> file_reader,
+                                  std::string path = "/proc/meminfo");
 
     [[nodiscard]]
     std::expected<MemoryStats, MemoryReadError> read() override;

@@ -1,4 +1,4 @@
-#include "platform/linux/proc_cpu_reader.hpp"
+#include "platform/linux/proc_cpu_reader_impl.hpp"
 
 #include <filesystem>
 #include <string_view>
@@ -8,14 +8,15 @@
 
 namespace pulse {
 
-ProcCpuReader::ProcCpuReader(std::shared_ptr<IFileReader> file_reader, std::filesystem::path path)
+ProcCpuReaderImpl::ProcCpuReaderImpl(std::shared_ptr<IFileReader> file_reader,
+                                     std::filesystem::path path)
     : ICpuReader(), file_reader_(std::move(file_reader)), path_(std::move(path)) {
     if (!file_reader_) {
-        throw std::invalid_argument("ProcCpuReader requires a valid IFileReader");
+        throw std::invalid_argument("ProcCpuReaderImpl requires a valid IFileReader");
     }
 }
 
-std::expected<CpuStats, CpuReadError> ProcCpuReader::read() const {
+std::expected<CpuStats, CpuReadError> ProcCpuReaderImpl::read() const {
     const auto result = file_reader_->read(path_);
     if (!result.has_value()) {
         return std::unexpected(CpuReadError::FileReadFailed);

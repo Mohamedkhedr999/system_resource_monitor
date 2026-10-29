@@ -6,8 +6,7 @@
 
 namespace pulse {
 
-std::expected<MemoryStats, MemoryParseError>
-MemoryStatsParser::parse(std::string_view content) {
+std::expected<MemoryStats, MemoryParseError> MemoryStatsParser::parse(std::string_view content) {
     std::istringstream input{std::string{content}};
 
     MemoryStats stats{};
@@ -34,15 +33,12 @@ MemoryStatsParser::parse(std::string_view content) {
             continue;
         }
 
-        if (!(line_stream >> value >> unit) ||
-            (line_stream >> extra) ||
-            unit != "kB") {
+        if (!(line_stream >> value >> unit) || (line_stream >> extra) || unit != "kB") {
             return std::unexpected(MemoryParseError::InvalidFormat);
         }
 
         // Reject negative numbers and nonnumeric values.
-        if (value.empty() ||
-            value.front() == '-' ||
+        if (value.empty() || value.front() == '-' ||
             value.find_first_not_of("0123456789") != std::string::npos) {
             return std::unexpected(MemoryParseError::InvalidValue);
         }
@@ -76,8 +72,7 @@ MemoryStatsParser::parse(std::string_view content) {
         return std::unexpected(MemoryParseError::MissingField);
     }
 
-    if (stats.total_kb == 0 ||
-        stats.available_kb > stats.total_kb) {
+    if (stats.total_kb == 0 || stats.available_kb > stats.total_kb) {
         return std::unexpected(MemoryParseError::InvalidValue);
     }
 

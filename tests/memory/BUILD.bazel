@@ -1,11 +1,12 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
-    name = "memory_monitor_test",
+    name = "memory_monitor_impl_test",
     size = "small",
-    srcs = ["memory_monitor_test.cpp"],
+    srcs = ["memory_monitor_impl_test.cpp"],
     deps = [
-        "//core/memory:memory_monitor",
+        "//core/memory:memory_monitor_impl",
+        "//core/memory:memory_monitor_interface",
         "//core/memory:memory_reader",
         "//core/memory:memory_stats",
         "//tests/mocks:mock_memory_reader",
@@ -14,12 +15,12 @@ cc_test(
 )
 
 cc_test(
-    name = "proc_memory_reader_test",
+    name = "proc_memory_reader_impl_test",
     size = "small",
-    srcs = ["proc_memory_reader_test.cpp"],
+    srcs = ["proc_memory_reader_impl_test.cpp"],
     deps = [
         "//core/memory:memory_reader",
-        "//platform/linux:proc_memory_reader",
+        "//platform/linux:proc_memory_reader_impl",
         "//tests/mocks:mock_file_reader",
         "@googletest//:gtest_main",
     ],

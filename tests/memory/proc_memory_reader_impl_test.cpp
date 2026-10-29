@@ -1,4 +1,4 @@
-#include "platform/linux/proc_memory_reader.hpp"
+#include "platform/linux/proc_memory_reader_impl.hpp"
 
 #include <array>
 #include <expected>
@@ -18,17 +18,17 @@ namespace {
 
 using FileReadResult = std::expected<std::string, std::error_code>;
 
-class ProcMemoryReaderTest : public testing::Test {
+class ProcMemoryReaderImplTest : public testing::Test {
    protected:
     std::shared_ptr<testing::StrictMock<MockFileReader>> file_reader_ =
         std::make_shared<testing::StrictMock<MockFileReader>>();
 };
 
-TEST_F(ProcMemoryReaderTest, ReadsDefaultPathAndParsesFieldsAcrossTheWholeFile) {
+TEST_F(ProcMemoryReaderImplTest, ReadsDefaultPathAndParsesFieldsAcrossTheWholeFile) {
     EXPECT_CALL(*file_reader_, read(std::filesystem::path("/proc/meminfo")))
         .WillOnce(testing::Return(
             FileReadResult("MemTotal: 16000 kB\nMemFree: 1000 kB\nMemAvailable: 10000 kB\n")));
-    ProcMemoryReader reader(file_reader_);
+    ProcMemoryReaderImpl reader(file_reader_);
 
     const auto result = reader.read();
 
@@ -37,11 +37,11 @@ TEST_F(ProcMemoryReaderTest, ReadsDefaultPathAndParsesFieldsAcrossTheWholeFile) 
     EXPECT_EQ(result->available_kb, 10000U);
 }
 
-TEST_F(ProcMemoryReaderTest, ForwardsCustomPath) {
+TEST_F(ProcMemoryReaderImplTest, ForwardsCustomPath) {
     const std::string path = "/test/custom-meminfo";
     EXPECT_CALL(*file_reader_, read(std::filesystem::path(path)))
         .WillOnce(testing::Return(FileReadResult("MemTotal: 100 kB\nMemAvailable: 40 kB")));
-    ProcMemoryReader reader(file_reader_, path);
+    ProcMemoryReaderImpl reader(file_reader_, path);
 
     const auto result = reader.read();
 
@@ -50,8 +50,8 @@ TEST_F(ProcMemoryReaderTest, ForwardsCustomPath) {
     EXPECT_EQ(result->available_kb, 40U);
 }
 
-TEST_F(ProcMemoryReaderTest, MapsFileErrorsToFileReadFailed) {
-    ProcMemoryReader reader(file_reader_);
+TEST_F(ProcMemoryReaderImplTest, MapsFileErrorsToFileReadFailed) {
+    ProcMemoryReaderImpl reader(file_reader_);
     for (const auto error : std::array{std::errc::no_such_file_or_directory,
                                        std::errc::permission_denied, std::errc::io_error}) {
         SCOPED_TRACE(std::make_error_code(error).message());
@@ -66,8 +66,8 @@ TEST_F(ProcMemoryReaderTest, MapsFileErrorsToFileReadFailed) {
     }
 }
 
-TEST_F(ProcMemoryReaderTest, MapsMissingMalformedAndInvalidDataToInvalidData) {
-    ProcMemoryReader reader(file_reader_);
+TEST_F(ProcMemoryReaderImplTest, MapsMissingMalformedAndInvalidDataToInvalidData) {
+    ProcMemoryReaderImpl reader(file_reader_);
     for (const std::string_view content :
          std::array{"", "MemTotal: 100 kB\n", "MemTotal: 100 MB\nMemAvailable: 40 kB\n",
                     "MemTotal: abc kB\nMemAvailable: 40 kB\n",
@@ -83,11 +83,11 @@ TEST_F(ProcMemoryReaderTest, MapsMissingMalformedAndInvalidDataToInvalidData) {
     }
 }
 
-TEST_F(ProcMemoryReaderTest, CollectsFreshStatsOnEachRead) {
+TEST_F(ProcMemoryReaderImplTest, CollectsFreshStatsOnEachRead) {
     EXPECT_CALL(*file_reader_, read(std::filesystem::path("/proc/meminfo")))
         .WillOnce(testing::Return(FileReadResult("MemTotal: 100 kB\nMemAvailable: 40 kB\n")))
         .WillOnce(testing::Return(FileReadResult("MemTotal: 100 kB\nMemAvailable: 25 kB\n")));
-    ProcMemoryReader reader(file_reader_);
+    ProcMemoryReaderImpl reader(file_reader_);
 
     const auto first = reader.read();
     const auto second = reader.read();
@@ -101,7 +101,7 @@ TEST_F(ProcMemoryReaderTest, CollectsFreshStatsOnEachRead) {
 }
 
 TEST(ProcMemoryReaderConstructorTest, RejectsNullFileReader) {
-    EXPECT_THROW((void)ProcMemoryReader(nullptr), std::invalid_argument);
+    EXPECT_THROW((void)ProcMemoryReaderImpl(nullptr), std::invalid_argument);
 }
 
 }  // namespace

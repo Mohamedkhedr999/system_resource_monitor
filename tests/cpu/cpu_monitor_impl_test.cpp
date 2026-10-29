@@ -1,4 +1,4 @@
-#include "core/cpu/cpu_monitor.hpp"
+#include "core/cpu/cpu_monitor_impl.hpp"
 
 #include <expected>
 #include <initializer_list>
@@ -18,19 +18,19 @@ namespace {
 
 using CpuReadResult = std::expected<CpuStats, CpuReadError>;
 
-class CpuMonitorTest : public testing::Test {
+class CpuMonitorImplTest : public testing::Test {
    protected:
     std::shared_ptr<testing::StrictMock<MockCpuReader>> reader_ =
         std::make_shared<testing::StrictMock<MockCpuReader>>();
 };
 
 TEST(CpuMonitorConstructorTest, RejectsNullReader) {
-    EXPECT_THROW((void)CpuMonitor(nullptr), std::invalid_argument);
+    EXPECT_THROW((void)CpuMonitorImpl(nullptr), std::invalid_argument);
 }
 
-TEST_F(CpuMonitorTest, FirstSuccessfulSampleReturnsNoUsage) {
+TEST_F(CpuMonitorImplTest, FirstSuccessfulSampleReturnsNoUsage) {
     EXPECT_CALL(*reader_, read()).WillOnce(testing::Return(CpuReadResult(CpuStats{})));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
 
     const auto result = monitor.sample();
 
@@ -38,12 +38,12 @@ TEST_F(CpuMonitorTest, FirstSuccessfulSampleReturnsNoUsage) {
     EXPECT_FALSE(result->has_value());
 }
 
-TEST_F(CpuMonitorTest, CalculatesUsageUsingConsecutiveSamples) {
+TEST_F(CpuMonitorImplTest, CalculatesUsageUsingConsecutiveSamples) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 100, .idle = 100})))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 125, .idle = 175})))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 200, .idle = 200})));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_TRUE(monitor.sample().has_value());
 
     const auto second = monitor.sample();
@@ -57,8 +57,8 @@ TEST_F(CpuMonitorTest, CalculatesUsageUsingConsecutiveSamples) {
     EXPECT_DOUBLE_EQ(**third, 75.0);
 }
 
-TEST_F(CpuMonitorTest, MapsAllReaderErrorsToReadFailed) {
-    CpuMonitor monitor(reader_);
+TEST_F(CpuMonitorImplTest, MapsAllReaderErrorsToReadFailed) {
+    CpuMonitorImpl monitor(reader_);
     for (const auto error :
          {CpuReadError::FileOpenFailed, CpuReadError::FileReadFailed, CpuReadError::InvalidData}) {
         SCOPED_TRACE(static_cast<int>(error));
@@ -72,11 +72,11 @@ TEST_F(CpuMonitorTest, MapsAllReaderErrorsToReadFailed) {
     }
 }
 
-TEST_F(CpuMonitorTest, FailedInitialReadDoesNotEstablishBaseline) {
+TEST_F(CpuMonitorImplTest, FailedInitialReadDoesNotEstablishBaseline) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(CpuReadResult(std::unexpected(CpuReadError::FileReadFailed))))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 10, .idle = 10})));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_FALSE(monitor.sample().has_value());
 
     const auto result = monitor.sample();
@@ -85,12 +85,12 @@ TEST_F(CpuMonitorTest, FailedInitialReadDoesNotEstablishBaseline) {
     EXPECT_FALSE(result->has_value());
 }
 
-TEST_F(CpuMonitorTest, ReadFailurePreservesLastSuccessfulBaseline) {
+TEST_F(CpuMonitorImplTest, ReadFailurePreservesLastSuccessfulBaseline) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 100, .idle = 100})))
         .WillOnce(testing::Return(CpuReadResult(std::unexpected(CpuReadError::FileReadFailed))))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 125, .idle = 175})));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_TRUE(monitor.sample().has_value());
     const auto failed = monitor.sample();
     ASSERT_FALSE(failed.has_value());
@@ -103,12 +103,12 @@ TEST_F(CpuMonitorTest, ReadFailurePreservesLastSuccessfulBaseline) {
     EXPECT_DOUBLE_EQ(**recovered, 25.0);
 }
 
-TEST_F(CpuMonitorTest, DecreasedCountersReturnCalculationFailedAndReplaceBaseline) {
+TEST_F(CpuMonitorImplTest, DecreasedCountersReturnCalculationFailedAndReplaceBaseline) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 100, .idle = 100})))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 10, .idle = 10})))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.user = 35, .idle = 85})));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_TRUE(monitor.sample().has_value());
 
     const auto failed = monitor.sample();
@@ -123,10 +123,10 @@ TEST_F(CpuMonitorTest, DecreasedCountersReturnCalculationFailedAndReplaceBaselin
     EXPECT_DOUBLE_EQ(**recovered, 25.0);
 }
 
-TEST_F(CpuMonitorTest, IdenticalSamplesReturnCalculationFailed) {
+TEST_F(CpuMonitorImplTest, IdenticalSamplesReturnCalculationFailed) {
     const CpuStats stats{.user = 10, .idle = 10};
     EXPECT_CALL(*reader_, read()).Times(2).WillRepeatedly(testing::Return(CpuReadResult(stats)));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_TRUE(monitor.sample().has_value());
 
     const auto result = monitor.sample();
@@ -135,12 +135,12 @@ TEST_F(CpuMonitorTest, IdenticalSamplesReturnCalculationFailed) {
     EXPECT_EQ(result.error(), CpuMonitorError::CalculationFailed);
 }
 
-TEST_F(CpuMonitorTest, CounterOverflowReturnsCalculationFailed) {
+TEST_F(CpuMonitorImplTest, CounterOverflowReturnsCalculationFailed) {
     const CpuStats overflowing{.user = std::numeric_limits<std::uint64_t>::max(), .idle = 1};
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(CpuReadResult(CpuStats{})))
         .WillOnce(testing::Return(CpuReadResult(overflowing)));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_TRUE(monitor.sample().has_value());
 
     const auto result = monitor.sample();
@@ -149,11 +149,11 @@ TEST_F(CpuMonitorTest, CounterOverflowReturnsCalculationFailed) {
     EXPECT_EQ(result.error(), CpuMonitorError::CalculationFailed);
 }
 
-TEST_F(CpuMonitorTest, ZeroUsageIsReturnedAsAValue) {
+TEST_F(CpuMonitorImplTest, ZeroUsageIsReturnedAsAValue) {
     EXPECT_CALL(*reader_, read())
         .WillOnce(testing::Return(CpuReadResult(CpuStats{})))
         .WillOnce(testing::Return(CpuReadResult(CpuStats{.idle = 10, .iowait = 10})));
-    CpuMonitor monitor(reader_);
+    CpuMonitorImpl monitor(reader_);
     ASSERT_TRUE(monitor.sample().has_value());
 
     const auto result = monitor.sample();

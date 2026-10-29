@@ -18,7 +18,7 @@ PulseApplication::PulseApplication(std::unique_ptr<IMonitoringService> monitorin
     }
 }
 
-std::expected<void, CpuMonitorError> PulseApplication::run(const std::stop_token& stop_token) {
+std::expected<void, MonitoringError> PulseApplication::run(const std::stop_token& stop_token) {
     std::mutex wait_mutex;
     std::condition_variable_any wake_up;
     std::unique_lock lock(wait_mutex);

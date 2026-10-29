@@ -1,4 +1,4 @@
-#include "platform/linux/proc_cpu_reader.hpp"
+#include "platform/linux/proc_cpu_reader_impl.hpp"
 
 #include <expected>
 #include <filesystem>
@@ -17,17 +17,17 @@ namespace {
 
 using FileReadResult = std::expected<std::string, std::error_code>;
 
-class ProcCpuReaderTest : public testing::Test {
+class ProcCpuReaderImplTest : public testing::Test {
    protected:
     std::shared_ptr<testing::StrictMock<MockFileReader>> file_reader_ =
         std::make_shared<testing::StrictMock<MockFileReader>>();
 };
 
-TEST_F(ProcCpuReaderTest, ReadsDefaultPathAndParsesOnlyFirstLine) {
+TEST_F(ProcCpuReaderImplTest, ReadsDefaultPathAndParsesOnlyFirstLine) {
     EXPECT_CALL(*file_reader_, read(std::filesystem::path("/proc/stat")))
         .WillOnce(testing::Return(
             FileReadResult("cpu 11 22 33 44 55 66 77 88\ncpu0 1 2 3 4 5 6 7 8\nintr 123\n")));
-    const ProcCpuReader reader(file_reader_);
+    const ProcCpuReaderImpl reader(file_reader_);
 
     const auto result = reader.read();
 
@@ -42,11 +42,11 @@ TEST_F(ProcCpuReaderTest, ReadsDefaultPathAndParsesOnlyFirstLine) {
     EXPECT_EQ(result->steal, 88U);
 }
 
-TEST_F(ProcCpuReaderTest, ForwardsCustomPath) {
+TEST_F(ProcCpuReaderImplTest, ForwardsCustomPath) {
     const std::filesystem::path path("/test/custom-stat");
     EXPECT_CALL(*file_reader_, read(path))
         .WillOnce(testing::Return(FileReadResult("cpu 1 2 3 4 5 6 7 8\n")));
-    const ProcCpuReader reader(file_reader_, path);
+    const ProcCpuReaderImpl reader(file_reader_, path);
 
     const auto result = reader.read();
 
@@ -54,10 +54,10 @@ TEST_F(ProcCpuReaderTest, ForwardsCustomPath) {
     EXPECT_EQ(result->user, 1U);
 }
 
-TEST_F(ProcCpuReaderTest, AcceptsFirstLineWithoutTrailingNewline) {
+TEST_F(ProcCpuReaderImplTest, AcceptsFirstLineWithoutTrailingNewline) {
     EXPECT_CALL(*file_reader_, read(std::filesystem::path("/proc/stat")))
         .WillOnce(testing::Return(FileReadResult("cpu 1 2 3 4 5 6 7 8")));
-    const ProcCpuReader reader(file_reader_);
+    const ProcCpuReaderImpl reader(file_reader_);
 
     const auto result = reader.read();
 
@@ -66,8 +66,8 @@ TEST_F(ProcCpuReaderTest, AcceptsFirstLineWithoutTrailingNewline) {
     EXPECT_EQ(result->steal, 8U);
 }
 
-TEST_F(ProcCpuReaderTest, MapsFileErrorsToFileReadFailed) {
-    const ProcCpuReader reader(file_reader_);
+TEST_F(ProcCpuReaderImplTest, MapsFileErrorsToFileReadFailed) {
+    const ProcCpuReaderImpl reader(file_reader_);
     for (const auto error : {std::errc::no_such_file_or_directory, std::errc::permission_denied,
                              std::errc::io_error}) {
         SCOPED_TRACE(std::make_error_code(error).message());
@@ -82,8 +82,8 @@ TEST_F(ProcCpuReaderTest, MapsFileErrorsToFileReadFailed) {
     }
 }
 
-TEST_F(ProcCpuReaderTest, MapsInvalidFirstLineToInvalidDataWithoutSearchingLaterLines) {
-    const ProcCpuReader reader(file_reader_);
+TEST_F(ProcCpuReaderImplTest, MapsInvalidFirstLineToInvalidDataWithoutSearchingLaterLines) {
+    const ProcCpuReaderImpl reader(file_reader_);
     for (const std::string contents :
          {"", "\ncpu 1 2 3 4 5 6 7 8\n", "cpu0 1 2 3 4 5 6 7 8\ncpu 1 2 3 4 5 6 7 8\n", "cpu 1 2",
           "cpu invalid 2 3 4 5 6 7 8"}) {
@@ -98,11 +98,11 @@ TEST_F(ProcCpuReaderTest, MapsInvalidFirstLineToInvalidDataWithoutSearchingLater
     }
 }
 
-TEST_F(ProcCpuReaderTest, CollectsFreshCountersOnEachRead) {
+TEST_F(ProcCpuReaderImplTest, CollectsFreshCountersOnEachRead) {
     EXPECT_CALL(*file_reader_, read(std::filesystem::path("/proc/stat")))
         .WillOnce(testing::Return(FileReadResult("cpu 1 2 3 4 5 6 7 8")))
         .WillOnce(testing::Return(FileReadResult("cpu 11 22 33 44 55 66 77 88")));
-    const ProcCpuReader reader(file_reader_);
+    const ProcCpuReaderImpl reader(file_reader_);
 
     const auto first = reader.read();
     const auto second = reader.read();
@@ -114,7 +114,7 @@ TEST_F(ProcCpuReaderTest, CollectsFreshCountersOnEachRead) {
 }
 
 TEST(ProcCpuReaderConstructorTest, RejectsNullFileReader) {
-    EXPECT_THROW((void)ProcCpuReader(nullptr), std::invalid_argument);
+    EXPECT_THROW((void)ProcCpuReaderImpl(nullptr), std::invalid_argument);
 }
 
 }  // namespace

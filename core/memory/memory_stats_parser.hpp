@@ -8,17 +8,12 @@
 
 namespace pulse {
 
-enum class MemoryParseError : std::uint8_t {
-    MissingField,
-    InvalidFormat,
-    InvalidValue
-};
+enum class MemoryParseError : std::uint8_t { MissingField, InvalidFormat, InvalidValue };
 
 class MemoryStatsParser {
-public:
+   public:
     [[nodiscard]]
-    static std::expected<MemoryStats, MemoryParseError>
-    parse(std::string_view content);
+    static std::expected<MemoryStats, MemoryParseError> parse(std::string_view content);
 };
 
 }  // namespace pulse

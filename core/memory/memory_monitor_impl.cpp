@@ -1,17 +1,18 @@
-#include "core/memory/memory_monitor.hpp"
+#include "core/memory/memory_monitor_impl.hpp"
 
 #include <stdexcept>
 #include <utility>
 
 namespace pulse {
 
-MemoryMonitor::MemoryMonitor(std::unique_ptr<IMemoryReader> reader) : reader_(std::move(reader)) {
+MemoryMonitorImpl::MemoryMonitorImpl(std::unique_ptr<IMemoryReader> reader)
+    : reader_(std::move(reader)) {
     if (!reader_) {
-        throw std::invalid_argument("MemoryMonitor requires a valid IMemoryReader");
+        throw std::invalid_argument("MemoryMonitorImpl requires a valid IMemoryReader");
     }
 }
 
-std::expected<MemoryUsage, MemoryMonitorError> MemoryMonitor::sample() {
+std::expected<MemoryUsage, MemoryMonitorError> MemoryMonitorImpl::sample() {
     const auto stats = reader_->read();
     if (!stats.has_value()) {
         return std::unexpected(MemoryMonitorError::ReadFailed);

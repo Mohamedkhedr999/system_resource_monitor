@@ -6,7 +6,7 @@ cc_test(
     srcs = ["pulse_application_test.cpp"],
     deps = [
         "//app:pulse_application",
-        "//core/cpu:cpu_monitor_interface",
+        "//core/monitoring:monitoring_service_interface",
         "//tests/mocks:mock_monitoring_service",
         "@googletest//:gtest_main",
     ],

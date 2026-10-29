@@ -1,11 +1,11 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
-    name = "cpu_monitor_test",
+    name = "cpu_monitor_impl_test",
     size = "small",
-    srcs = ["cpu_monitor_test.cpp"],
+    srcs = ["cpu_monitor_impl_test.cpp"],
     deps = [
-        "//core/cpu:cpu_monitor",
+        "//core/cpu:cpu_monitor_impl",
         "//core/cpu:cpu_monitor_interface",
         "//core/cpu:cpu_reader",
         "//core/cpu:cpu_stats",
@@ -25,12 +25,12 @@ cc_test(
 )
 
 cc_test(
-    name = "proc_cpu_reader_test",
+    name = "proc_cpu_reader_impl_test",
     size = "small",
-    srcs = ["proc_cpu_reader_test.cpp"],
+    srcs = ["proc_cpu_reader_impl_test.cpp"],
     deps = [
         "//core/cpu:cpu_reader",
-        "//platform/linux:proc_cpu_reader",
+        "//platform/linux:proc_cpu_reader_impl",
         "//tests/mocks:mock_file_reader",
         "@googletest//:gtest_main",
     ],

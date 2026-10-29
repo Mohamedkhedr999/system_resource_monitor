@@ -1,5 +1,5 @@
-#ifndef SYSTEM_RESOURCE_MONITOR_CORE_CPU_CPU_MONITOR_HPP
-#define SYSTEM_RESOURCE_MONITOR_CORE_CPU_CPU_MONITOR_HPP
+#ifndef SYSTEM_RESOURCE_MONITOR_CORE_CPU_CPU_MONITOR_IMPL_HPP
+#define SYSTEM_RESOURCE_MONITOR_CORE_CPU_CPU_MONITOR_IMPL_HPP
 
 #include <expected>
 #include <memory>
@@ -10,9 +10,9 @@
 
 namespace pulse {
 
-class CpuMonitor final : public ICpuMonitor {
+class CpuMonitorImpl final : public ICpuMonitor {
    public:
-    explicit CpuMonitor(std::shared_ptr<ICpuReader> reader);
+    explicit CpuMonitorImpl(std::shared_ptr<ICpuReader> reader);
 
     [[nodiscard]]
     std::expected<std::optional<double>, CpuMonitorError> sample() override;
@@ -24,4 +24,4 @@ class CpuMonitor final : public ICpuMonitor {
 
 }  // namespace pulse
 
-#endif  // SYSTEM_RESOURCE_MONITOR_CORE_CPU_CPU_MONITOR_HPP
+#endif  // SYSTEM_RESOURCE_MONITOR_CORE_CPU_CPU_MONITOR_IMPL_HPP
