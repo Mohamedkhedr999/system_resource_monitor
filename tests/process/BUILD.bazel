@@ -1,0 +1,24 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+cc_test(
+    name = "proc_process_reader_impl_test",
+    size = "small",
+    srcs = ["proc_process_reader_impl_test.cpp"],
+    deps = [
+        "//core/process:process_info",
+        "//core/process:process_reader",
+        "//platform/linux:proc_process_reader_impl",
+        "//tests/mocks:mock_file_reader",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "process_stats_parser_test",
+    size = "small",
+    srcs = ["process_stats_parser_test.cpp"],
+    deps = [
+        "//core/process:process_stats_parser",
+        "@googletest//:gtest_main",
+    ],
+)

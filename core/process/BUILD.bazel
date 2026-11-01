@@ -1,0 +1,22 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "process_reader",
+    hdrs = ["interfaces/process_reader.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":process_info"],
+)
+
+cc_library(
+    name = "process_info",
+    hdrs = ["process_info.hpp"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "process_stats_parser",
+    srcs = ["process_stats_parser.cpp"],
+    hdrs = ["process_stats_parser.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":process_info"],
+)

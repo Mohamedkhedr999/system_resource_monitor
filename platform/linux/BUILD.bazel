@@ -1,6 +1,19 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "proc_process_reader_impl",
+    srcs = ["proc_process_reader_impl.cpp"],
+    hdrs = ["proc_process_reader_impl.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/io:file_reader",
+        "//core/process:process_info",
+        "//core/process:process_reader",
+        "//core/process:process_stats_parser",
+    ],
+)
+
+cc_library(
     name = "proc_memory_reader_impl",
     srcs = ["proc_memory_reader_impl.cpp"],
     hdrs = ["proc_memory_reader_impl.hpp"],
