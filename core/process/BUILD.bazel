@@ -1,6 +1,28 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "process_monitor_impl",
+    srcs = ["process_monitor_impl.cpp"],
+    hdrs = ["process_monitor_impl.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":process_info",
+        ":process_monitor_interface",
+        ":process_reader",
+    ],
+)
+
+cc_library(
+    name = "process_monitor_interface",
+    hdrs = ["interfaces/process_monitor.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":process_info",
+        ":process_reader",
+    ],
+)
+
+cc_library(
     name = "process_reader",
     hdrs = ["interfaces/process_reader.hpp"],
     visibility = ["//visibility:public"],

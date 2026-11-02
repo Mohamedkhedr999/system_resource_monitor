@@ -16,6 +16,7 @@ cc_library(
         ":monitoring_service_interface",
         "//core/cpu:cpu_monitor_interface",
         "//core/memory:memory_monitor_interface",
+        "//core/process:process_monitor_interface",
     ],
 )
 
@@ -23,5 +24,8 @@ cc_library(
     name = "metrics_presenter",
     hdrs = ["interfaces/metrics_presenter.hpp"],
     visibility = ["//visibility:public"],
-    deps = ["//core/memory:memory_usage"],
+    deps = [
+        "//core/memory:memory_usage",
+        "//core/process:process_info",
+    ],
 )

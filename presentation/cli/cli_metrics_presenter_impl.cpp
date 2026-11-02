@@ -22,4 +22,29 @@ void CliMetricsPresenterImpl::presentMemoryUsage(const MemoryUsage& usage) {
             << total_gib << " GiB (" << usage.percentage << "%)\n";
 }
 
+void CliMetricsPresenterImpl::presentProcesses(const std::vector<ProcessInfo>& processes) {
+    constexpr double kKibPerMib = 1024.0;
+    constexpr int kPidWidth = 10;
+    constexpr int kNameWidth = 22;
+    constexpr int kStateWidth = 9;
+
+    output_ << "\nTOP " << processes.size() << " PROCESSES BY MEMORY\n";
+    output_ << std::left << std::setw(kPidWidth) << "PID" << std::setw(kNameWidth) << "NAME"
+            << std::setw(kStateWidth) << "STATE" << "MEMORY\n";
+
+    for (const auto& process : processes) {
+        output_ << std::left << std::setw(kPidWidth) << process.pid << std::setw(kNameWidth)
+                << process.name << std::setw(kStateWidth) << process.state;
+
+        if (process.memory_kb) {
+            const double memory_mib = static_cast<double>(*process.memory_kb) / kKibPerMib;
+            output_ << std::fixed << std::setprecision(2) << memory_mib << " MiB";
+        } else {
+            output_ << "N/A";
+        }
+
+        output_ << '\n';
+    }
+}
+
 }  // namespace pulse

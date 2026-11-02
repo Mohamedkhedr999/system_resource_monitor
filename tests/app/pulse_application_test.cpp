@@ -104,7 +104,8 @@ INSTANTIATE_TEST_SUITE_P(SamplingErrors, PulseApplicationErrorTest,
                          testing::Values(MonitoringError::CpuReadFailed,
                                          MonitoringError::CpuCalculationFailed,
                                          MonitoringError::MemoryReadFailed,
-                                         MonitoringError::MemoryInvalidStats));
+                                         MonitoringError::MemoryInvalidStats,
+                                         MonitoringError::ProcessReadFailed));
 
 }  // namespace
 }  // namespace pulse

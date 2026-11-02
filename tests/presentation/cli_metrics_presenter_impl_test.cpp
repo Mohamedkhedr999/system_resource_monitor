@@ -1,7 +1,10 @@
 #include "presentation/cli/cli_metrics_presenter_impl.hpp"
 
+#include <optional>
 #include <sstream>
+#include <vector>
 
+#include "core/process/process_info.hpp"
 #include "gtest/gtest.h"
 
 namespace pulse {
@@ -77,6 +80,55 @@ TEST(CliMetricsPresenterImplTest, AppendsCpuAndFullMemoryUsageOnSeparateLines) {
     presenter.presentMemoryUsage(kUsage);
 
     EXPECT_EQ(output.str(), "CPU Usage: 25.00%\nMemory Usage: 1.00 / 1.00 GiB (100.00%)\n");
+}
+
+TEST(CliMetricsPresenterImplTest, PresentsProcessColumnsAndConvertsKibToMib) {
+    const std::vector<ProcessInfo> processes{
+        {.pid = 1234, .name = "firefox", .state = 'S', .memory_kb = 870400},
+        {.pid = 3789, .name = "pulse", .state = 'R', .memory_kb = 12800},
+    };
+    std::ostringstream output;
+    CliMetricsPresenterImpl presenter(output);
+
+    presenter.presentProcesses(processes);
+
+    EXPECT_EQ(output.str(),
+              "\nTOP 2 PROCESSES BY MEMORY\n"
+              "PID       NAME                  STATE    MEMORY\n"
+              "1234      firefox               S        850.00 MiB\n"
+              "3789      pulse                 R        12.50 MiB\n");
+}
+
+TEST(CliMetricsPresenterImplTest, DistinguishesUnknownMemoryFromZeroAndPreservesInputOrder) {
+    const std::vector<ProcessInfo> processes{
+        {.pid = 9, .name = "unknown", .state = 'S', .memory_kb = std::nullopt},
+        {.pid = 2, .name = "zero", .state = 'R', .memory_kb = 0},
+    };
+    std::ostringstream output;
+    CliMetricsPresenterImpl presenter(output);
+
+    presenter.presentProcesses(processes);
+
+    EXPECT_EQ(output.str(),
+              "\nTOP 2 PROCESSES BY MEMORY\n"
+              "PID       NAME                  STATE    MEMORY\n"
+              "9         unknown               S        N/A\n"
+              "2         zero                  R        0.00 MiB\n");
+}
+
+TEST(CliMetricsPresenterImplTest, AppendsEmptyProcessTableAfterCpuAndMemory) {
+    std::ostringstream output;
+    CliMetricsPresenterImpl presenter(output);
+
+    presenter.presentCpuUsage(2.45);
+    presenter.presentMemoryUsage({.used_kb = 1048576, .total_kb = 4194304, .percentage = 25.0});
+    presenter.presentProcesses({});
+
+    EXPECT_EQ(output.str(),
+              "CPU Usage: 2.45%\n"
+              "Memory Usage: 1.00 / 4.00 GiB (25.00%)\n"
+              "\nTOP 0 PROCESSES BY MEMORY\n"
+              "PID       NAME                  STATE    MEMORY\n");
 }
 
 }  // namespace

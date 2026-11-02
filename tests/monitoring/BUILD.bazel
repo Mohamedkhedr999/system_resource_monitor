@@ -10,9 +10,12 @@ cc_test(
         "//core/memory:memory_usage",
         "//core/monitoring:monitoring_service_interface",
         "//core/monitoring:monitoring_service_impl",
+        "//core/process:process_info",
+        "//core/process:process_reader",
         "//tests/mocks:mock_cpu_monitor",
         "//tests/mocks:mock_memory_monitor",
         "//tests/mocks:mock_metrics_presenter",
+        "//tests/mocks:mock_process_monitor",
         "@googletest//:gtest_main",
     ],
 )

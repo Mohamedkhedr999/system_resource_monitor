@@ -8,6 +8,7 @@
 #include "core/memory/interfaces/memory_monitor.hpp"
 #include "core/monitoring/interfaces/metrics_presenter.hpp"
 #include "core/monitoring/interfaces/monitoring_service.hpp"
+#include "core/process/interfaces/process_monitor.hpp"
 
 namespace pulse {
 
@@ -15,6 +16,7 @@ class MonitoringServiceImpl final : public IMonitoringService {
    public:
     MonitoringServiceImpl(std::unique_ptr<ICpuMonitor> cpu_monitor,
                           std::unique_ptr<IMemoryMonitor> memory_monitor,
+                          std::unique_ptr<IProcessMonitor> process_monitor,
                           std::unique_ptr<IMetricsPresenter> presenter);
 
     [[nodiscard]]
@@ -23,6 +25,7 @@ class MonitoringServiceImpl final : public IMonitoringService {
    private:
     std::unique_ptr<ICpuMonitor> cpu_monitor_;
     std::unique_ptr<IMemoryMonitor> memory_monitor_;
+    std::unique_ptr<IProcessMonitor> process_monitor_;
     std::unique_ptr<IMetricsPresenter> presenter_;
 };
 

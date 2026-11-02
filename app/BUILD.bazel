@@ -20,9 +20,11 @@ cc_library(
         "//core/memory:memory_monitor_impl",
         "//core/monitoring:monitoring_service_impl",
         "//core/monitoring:monitoring_service_interface",
+        "//core/process:process_monitor_impl",
         "//platform/linux:file_reader_impl",
         "//platform/linux:proc_cpu_reader_impl",
         "//platform/linux:proc_memory_reader_impl",
+        "//platform/linux:proc_process_reader_impl",
         "//presentation/cli:cli_metrics_presenter_impl",
     ],
 )

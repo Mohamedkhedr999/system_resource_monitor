@@ -5,5 +5,8 @@ cc_library(
     srcs = ["cli_metrics_presenter_impl.cpp"],
     hdrs = ["cli_metrics_presenter_impl.hpp"],
     visibility = ["//visibility:public"],
-    deps = ["//core/monitoring:metrics_presenter"],
+    deps = [
+        "//core/monitoring:metrics_presenter",
+        "//core/process:process_info",
+    ],
 )

@@ -1,6 +1,19 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
+    name = "process_monitor_impl_test",
+    size = "small",
+    srcs = ["process_monitor_impl_test.cpp"],
+    deps = [
+        "//core/process:process_info",
+        "//core/process:process_monitor_impl",
+        "//core/process:process_reader",
+        "//tests/mocks:mock_process_reader",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "proc_process_reader_impl_test",
     size = "small",
     srcs = ["proc_process_reader_impl_test.cpp"],

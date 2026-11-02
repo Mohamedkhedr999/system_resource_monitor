@@ -10,16 +10,17 @@ enum class MonitoringError : std::uint8_t {
     CpuReadFailed,
     CpuCalculationFailed,
     MemoryReadFailed,
-    MemoryInvalidStats
+    MemoryInvalidStats,
+    ProcessReadFailed
 };
 
 class IMonitoringService {
    public:
     virtual ~IMonitoringService() = default;
 
-    // Prints memory usage and CPU usage when available.
-    // The first tick prints only memory because CPU usage needs two samples.
-    // If either monitor fails, returns an error without printing any metrics.
+    // Prints memory usage, processes, and CPU usage when available.
+    // The first tick omits CPU usage because it needs two samples.
+    // If any monitor fails, returns an error without printing any metrics.
     [[nodiscard]]
     virtual std::expected<void, MonitoringError> tick() = 0;
 };
