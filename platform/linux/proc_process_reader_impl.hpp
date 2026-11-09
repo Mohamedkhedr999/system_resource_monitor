@@ -8,6 +8,7 @@
 
 #include "core/io/interfaces/file_reader.hpp"
 #include "core/process/interfaces/process_reader.hpp"
+#include "core/process/process_snapshot.hpp"
 
 namespace pulse {
 
@@ -17,7 +18,7 @@ class ProcProcessReader final : public IProcessReader {
                                std::filesystem::path proc_path = "/proc");
 
     [[nodiscard]]
-    std::expected<std::vector<ProcessInfo>, ProcessReadError> read() const override;
+    std::expected<std::vector<ProcessSnapshot>, ProcessReadError> read() const override;
 
    private:
     std::shared_ptr<IFileReader> file_reader_;

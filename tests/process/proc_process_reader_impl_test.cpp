@@ -13,6 +13,7 @@
 
 #include "core/process/interfaces/process_reader.hpp"
 #include "core/process/process_info.hpp"
+#include "core/process/process_snapshot.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "tests/mocks/mock_file_reader.hpp"
@@ -25,6 +26,11 @@ using FileReadResult = std::expected<std::string, std::error_code>;
 constexpr std::string_view valid_status =
     "Name: my worker\nState: S (sleeping)\nPid: 123\nVmRSS: 4096 kB\n";
 constexpr std::string_view status_without_memory = "Name: other\nState: R (running)\nPid: 456\n";
+
+std::string statRecord(std::string_view pid, std::string_view user_ticks = "140") {
+    return std::string{pid} + " (my worker) S 4 5 6 7 8 9 10 11 12 13 " + std::string{user_ticks} +
+           " 150 16 17 18 19 20 21 220\n";
+}
 
 class ProcProcessReaderTest : public testing::Test {
    protected:
@@ -42,6 +48,11 @@ class ProcProcessReaderTest : public testing::Test {
             std::filesystem::remove_all(directory_, error);
             EXPECT_FALSE(error) << error.message();
         }
+    }
+
+    void expectStat(std::string_view pid) {
+        EXPECT_CALL(*file_reader_, read(directory_ / pid / "stat"))
+            .WillOnce(testing::Return(FileReadResult{statRecord(pid)}));
     }
 
     std::filesystem::path directory_;
@@ -84,20 +95,25 @@ TEST_F(ProcProcessReaderTest, ReturnsEmptyVectorForEmptyDirectory) {
     EXPECT_TRUE(result->empty());
 }
 
-TEST_F(ProcProcessReaderTest, ReadsStatusFromCustomRootAndMapsAllFields) {
+TEST_F(ProcProcessReaderTest, ReadsBothFilesFromCustomRootAndMapsAllFields) {
     ASSERT_TRUE(std::filesystem::create_directory(directory_ / "123"));
     EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
         .WillOnce(testing::Return(FileReadResult{std::string{valid_status}}));
+    expectStat("123");
     const ProcProcessReader reader(file_reader_, directory_);
 
     const auto result = reader.read();
 
     ASSERT_TRUE(result.has_value());
     ASSERT_EQ(result->size(), 1U);
-    EXPECT_EQ(result->front().pid, 123);
-    EXPECT_EQ(result->front().name, "my worker");
-    EXPECT_EQ(result->front().state, 'S');
-    EXPECT_THAT(result->front().memory_kb, testing::Optional(4096U));
+    EXPECT_EQ(result->front().info.pid, 123);
+    EXPECT_EQ(result->front().cpu_stats.pid, 123);
+    EXPECT_EQ(result->front().cpu_stats.user_ticks, 140U);
+    EXPECT_EQ(result->front().cpu_stats.system_ticks, 150U);
+    EXPECT_EQ(result->front().cpu_stats.start_time_ticks, 220U);
+    EXPECT_EQ(result->front().info.name, "my worker");
+    EXPECT_EQ(result->front().info.state, 'S');
+    EXPECT_THAT(result->front().info.memory_kb, testing::Optional(4096U));
 }
 
 TEST_F(ProcProcessReaderTest, FiltersNonnumericEntriesAndCollectsMultipleProcessesInAnyOrder) {
@@ -106,29 +122,35 @@ TEST_F(ProcProcessReaderTest, FiltersNonnumericEntriesAndCollectsMultipleProcess
     }
     EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
         .WillOnce(testing::Return(FileReadResult{std::string{valid_status}}));
+    expectStat("123");
     EXPECT_CALL(*file_reader_, read(directory_ / "456" / "status"))
         .WillOnce(testing::Return(FileReadResult{std::string{status_without_memory}}));
+    expectStat("456");
     const ProcProcessReader reader(file_reader_, directory_);
 
     const auto result = reader.read();
 
     ASSERT_TRUE(result.has_value());
-    EXPECT_THAT(*result, testing::UnorderedElementsAre(testing::Field(&ProcessInfo::pid, 123),
-                                                       testing::Field(&ProcessInfo::pid, 456)));
+    EXPECT_THAT(
+        *result,
+        testing::UnorderedElementsAre(
+            testing::Field(&ProcessSnapshot::info, testing::Field(&ProcessInfo::pid, 123)),
+            testing::Field(&ProcessSnapshot::info, testing::Field(&ProcessInfo::pid, 456))));
 }
 
 TEST_F(ProcProcessReaderTest, IncludesProcessWithoutVmRss) {
     ASSERT_TRUE(std::filesystem::create_directory(directory_ / "456"));
     EXPECT_CALL(*file_reader_, read(directory_ / "456" / "status"))
         .WillOnce(testing::Return(FileReadResult{std::string{status_without_memory}}));
+    expectStat("456");
     const ProcProcessReader reader(file_reader_, directory_);
 
     const auto result = reader.read();
 
     ASSERT_TRUE(result.has_value());
     ASSERT_EQ(result->size(), 1U);
-    EXPECT_EQ(result->front().pid, 456);
-    EXPECT_FALSE(result->front().memory_kb.has_value());
+    EXPECT_EQ(result->front().info.pid, 456);
+    EXPECT_FALSE(result->front().info.memory_kb.has_value());
 }
 
 TEST_F(ProcProcessReaderTest, SkipsUnreadableProcessesAndKeepsValidOnes) {
@@ -142,13 +164,16 @@ TEST_F(ProcProcessReaderTest, SkipsUnreadableProcessesAndKeepsValidOnes) {
         EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
             .WillOnce(
                 testing::Return(FileReadResult{std::unexpected(std::make_error_code(error))}));
+        expectStat("123");
         EXPECT_CALL(*file_reader_, read(directory_ / "456" / "status"))
             .WillOnce(testing::Return(FileReadResult{std::string{status_without_memory}}));
+        expectStat("456");
 
         const auto result = reader.read();
 
         ASSERT_TRUE(result.has_value());
-        EXPECT_THAT(*result, testing::ElementsAre(testing::Field(&ProcessInfo::pid, 456)));
+        EXPECT_THAT(*result, testing::ElementsAre(testing::Field(
+                                 &ProcessSnapshot::info, testing::Field(&ProcessInfo::pid, 456))));
     }
 }
 
@@ -163,13 +188,16 @@ TEST_F(ProcProcessReaderTest, SkipsMalformedProcessesAndKeepsValidOnes) {
         SCOPED_TRACE(content);
         EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
             .WillOnce(testing::Return(FileReadResult{std::string{content}}));
+        expectStat("123");
         EXPECT_CALL(*file_reader_, read(directory_ / "456" / "status"))
             .WillOnce(testing::Return(FileReadResult{std::string{status_without_memory}}));
+        expectStat("456");
 
         const auto result = reader.read();
 
         ASSERT_TRUE(result.has_value());
-        EXPECT_THAT(*result, testing::ElementsAre(testing::Field(&ProcessInfo::pid, 456)));
+        EXPECT_THAT(*result, testing::ElementsAre(testing::Field(
+                                 &ProcessSnapshot::info, testing::Field(&ProcessInfo::pid, 456))));
     }
 }
 
@@ -177,6 +205,7 @@ TEST_F(ProcProcessReaderTest, ReturnsEmptyVectorWhenAllProcessesAreSkipped) {
     ASSERT_TRUE(std::filesystem::create_directory(directory_ / "123"));
     EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
         .WillOnce(testing::Return(FileReadResult{std::string{}}));
+    expectStat("123");
     const ProcProcessReader reader(file_reader_, directory_);
 
     const auto result = reader.read();
@@ -191,6 +220,9 @@ TEST_F(ProcProcessReaderTest, ReadsFreshContentsOnEachCall) {
         .WillOnce(testing::Return(FileReadResult{std::string{valid_status}}))
         .WillOnce(
             testing::Return(FileReadResult{"Name: changed\nState: R\nPid: 123\nVmRSS: 0 kB\n"}));
+    EXPECT_CALL(*file_reader_, read(directory_ / "123" / "stat"))
+        .WillOnce(testing::Return(FileReadResult{statRecord("123")}))
+        .WillOnce(testing::Return(FileReadResult{statRecord("123", "160")}));
     const ProcProcessReader reader(file_reader_, directory_);
 
     const auto first = reader.read();
@@ -200,11 +232,63 @@ TEST_F(ProcProcessReaderTest, ReadsFreshContentsOnEachCall) {
     ASSERT_TRUE(second.has_value());
     ASSERT_EQ(first->size(), 1U);
     ASSERT_EQ(second->size(), 1U);
-    EXPECT_EQ(first->front().name, "my worker");
-    EXPECT_THAT(first->front().memory_kb, testing::Optional(4096U));
-    EXPECT_EQ(second->front().name, "changed");
-    EXPECT_EQ(second->front().state, 'R');
-    EXPECT_THAT(second->front().memory_kb, testing::Optional(0U));
+    EXPECT_EQ(first->front().info.name, "my worker");
+    EXPECT_THAT(first->front().info.memory_kb, testing::Optional(4096U));
+    EXPECT_EQ(first->front().cpu_stats.user_ticks, 140U);
+    EXPECT_EQ(second->front().cpu_stats.user_ticks, 160U);
+    EXPECT_EQ(second->front().info.name, "changed");
+    EXPECT_EQ(second->front().info.state, 'R');
+    EXPECT_THAT(second->front().info.memory_kb, testing::Optional(0U));
+}
+
+TEST_F(ProcProcessReaderTest, SkipsUnreadableStatAndKeepsValidProcesses) {
+    ASSERT_TRUE(std::filesystem::create_directory(directory_ / "123"));
+    ASSERT_TRUE(std::filesystem::create_directory(directory_ / "456"));
+    const ProcProcessReader reader(file_reader_, directory_);
+
+    for (const auto error : std::array{std::errc::no_such_file_or_directory,
+                                       std::errc::permission_denied, std::errc::io_error}) {
+        SCOPED_TRACE(std::make_error_code(error).message());
+        EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
+            .WillOnce(testing::Return(FileReadResult{std::string{valid_status}}));
+        EXPECT_CALL(*file_reader_, read(directory_ / "123" / "stat"))
+            .WillOnce(
+                testing::Return(FileReadResult{std::unexpected(std::make_error_code(error))}));
+        EXPECT_CALL(*file_reader_, read(directory_ / "456" / "status"))
+            .WillOnce(testing::Return(FileReadResult{std::string{status_without_memory}}));
+        expectStat("456");
+
+        const auto result = reader.read();
+
+        ASSERT_TRUE(result.has_value());
+        ASSERT_EQ(result->size(), 1U);
+        EXPECT_EQ(result->front().info.pid, 456);
+    }
+}
+
+TEST_F(ProcProcessReaderTest, SkipsMalformedStatAndMismatchedPidsWhileKeepingValidProcesses) {
+    ASSERT_TRUE(std::filesystem::create_directory(directory_ / "123"));
+    ASSERT_TRUE(std::filesystem::create_directory(directory_ / "456"));
+    const ProcProcessReader reader(file_reader_, directory_);
+
+    for (const auto& content : std::array{std::string{}, std::string{"123 (truncated) S"},
+                                          statRecord("123", "bad"), statRecord("789")}) {
+        SCOPED_TRACE(content);
+        EXPECT_CALL(*file_reader_, read(directory_ / "123" / "status"))
+            .WillOnce(testing::Return(FileReadResult{std::string{valid_status}}));
+        EXPECT_CALL(*file_reader_, read(directory_ / "123" / "stat"))
+            .WillOnce(testing::Return(FileReadResult{content}));
+        EXPECT_CALL(*file_reader_, read(directory_ / "456" / "status"))
+            .WillOnce(testing::Return(FileReadResult{std::string{status_without_memory}}));
+        expectStat("456");
+
+        const auto result = reader.read();
+
+        ASSERT_TRUE(result.has_value());
+        ASSERT_EQ(result->size(), 1U);
+        EXPECT_EQ(result->front().info.pid, 456);
+        EXPECT_EQ(result->front().cpu_stats.pid, 456);
+    }
 }
 
 }  // namespace

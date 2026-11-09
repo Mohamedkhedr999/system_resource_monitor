@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <ostream>
+#include <sstream>
 
 namespace pulse {
 
@@ -27,14 +28,23 @@ void CliMetricsPresenterImpl::presentProcesses(const std::vector<ProcessInfo>& p
     constexpr int kPidWidth = 10;
     constexpr int kNameWidth = 22;
     constexpr int kStateWidth = 9;
+    constexpr int kCpuWidth = 11;
 
     output_ << "\nTOP " << processes.size() << " PROCESSES BY MEMORY\n";
     output_ << std::left << std::setw(kPidWidth) << "PID" << std::setw(kNameWidth) << "NAME"
-            << std::setw(kStateWidth) << "STATE" << "MEMORY\n";
+            << std::setw(kStateWidth) << "STATE" << std::setw(kCpuWidth) << "CPU%" << "MEMORY\n";
 
     for (const auto& process : processes) {
         output_ << std::left << std::setw(kPidWidth) << process.pid << std::setw(kNameWidth)
                 << process.name << std::setw(kStateWidth) << process.state;
+
+        if (process.cpu_percentage) {
+            std::ostringstream cpu_stream;
+            cpu_stream << std::fixed << std::setprecision(2) << *process.cpu_percentage << '%';
+            output_ << std::setw(kCpuWidth) << cpu_stream.str();
+        } else {
+            output_ << std::setw(kCpuWidth) << "N/A";
+        }
 
         if (process.memory_kb) {
             const double memory_mib = static_cast<double>(*process.memory_kb) / kKibPerMib;

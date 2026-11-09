@@ -1,6 +1,28 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
+    name = "process_cpu_usage_calculator_test",
+    size = "small",
+    srcs = ["process_cpu_usage_calculator_test.cpp"],
+    deps = [
+        "//core/process:process_cpu_stats",
+        "//core/process:process_cpu_usage_calculator",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "process_cpu_stats_parser_test",
+    size = "small",
+    srcs = ["process_cpu_stats_parser_test.cpp"],
+    deps = [
+        "//core/process:process_cpu_stats",
+        "//core/process:process_cpu_stats_parser",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "process_monitor_impl_test",
     size = "small",
     srcs = ["process_monitor_impl_test.cpp"],
@@ -8,6 +30,7 @@ cc_test(
         "//core/process:process_info",
         "//core/process:process_monitor_impl",
         "//core/process:process_reader",
+        "//core/process:process_snapshot",
         "//tests/mocks:mock_process_reader",
         "@googletest//:gtest_main",
     ],
@@ -20,6 +43,7 @@ cc_test(
     deps = [
         "//core/process:process_info",
         "//core/process:process_reader",
+        "//core/process:process_snapshot",
         "//platform/linux:proc_process_reader_impl",
         "//tests/mocks:mock_file_reader",
         "@googletest//:gtest_main",

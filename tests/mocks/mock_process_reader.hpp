@@ -8,7 +8,7 @@ namespace pulse {
 
 class MockProcessReader : public IProcessReader {
    public:
-    MOCK_METHOD((std::expected<std::vector<ProcessInfo>, ProcessReadError>), read, (),
+    MOCK_METHOD((std::expected<std::vector<ProcessSnapshot>, ProcessReadError>), read, (),
                 (const, override));
 };
 

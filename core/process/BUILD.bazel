@@ -1,11 +1,45 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
+    name = "process_snapshot",
+    hdrs = ["process_snapshot.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":process_cpu_stats",
+        ":process_info",
+    ],
+)
+
+cc_library(
+    name = "process_cpu_usage_calculator",
+    srcs = ["process_cpu_usage_calculator.cpp"],
+    hdrs = ["process_cpu_usage_calculator.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":process_cpu_stats"],
+)
+
+cc_library(
+    name = "process_cpu_stats",
+    hdrs = ["process_cpu_stats.hpp"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "process_cpu_stats_parser",
+    srcs = ["process_cpu_stats_parser.cpp"],
+    hdrs = ["process_cpu_stats_parser.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [":process_cpu_stats"],
+)
+
+cc_library(
     name = "process_monitor_impl",
     srcs = ["process_monitor_impl.cpp"],
     hdrs = ["process_monitor_impl.hpp"],
     visibility = ["//visibility:public"],
     deps = [
+        ":process_cpu_stats",
+        ":process_cpu_usage_calculator",
         ":process_info",
         ":process_monitor_interface",
         ":process_reader",
@@ -26,7 +60,7 @@ cc_library(
     name = "process_reader",
     hdrs = ["interfaces/process_reader.hpp"],
     visibility = ["//visibility:public"],
-    deps = [":process_info"],
+    deps = [":process_snapshot"],
 )
 
 cc_library(

@@ -12,6 +12,7 @@ struct ProcessInfo {
     std::string name;
     char state{};
     std::optional<std::uint64_t> memory_kb;
+    std::optional<double> cpu_percentage{};
 };
 
 }  // namespace pulse

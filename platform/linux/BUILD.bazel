@@ -7,8 +7,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//core/io:file_reader",
-        "//core/process:process_info",
+        "//core/process:process_cpu_stats_parser",
         "//core/process:process_reader",
+        "//core/process:process_snapshot",
         "//core/process:process_stats_parser",
     ],
 )

@@ -1,7 +1,11 @@
 #include "app/application_factory.hpp"
 
+#include <unistd.h>
+
+#include <cstdint>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "core/cpu/cpu_monitor_impl.hpp"
@@ -23,7 +27,12 @@ std::unique_ptr<IMonitoringService> ApplicationFactory::createMonitoringService(
     auto memory_reader = std::make_unique<ProcMemoryReaderImpl>(file_reader);
     auto memory_monitor = std::make_unique<MemoryMonitorImpl>(std::move(memory_reader));
     auto process_reader = std::make_unique<ProcProcessReader>(file_reader);
-    auto process_monitor = std::make_unique<ProcessMonitorImpl>(std::move(process_reader));
+    const auto clock_ticks = ::sysconf(_SC_CLK_TCK);
+    if (clock_ticks <= 0) {
+        throw std::runtime_error("Failed to obtain the system clock tick rate");
+    }
+    auto process_monitor = std::make_unique<ProcessMonitorImpl>(
+        std::move(process_reader), static_cast<std::uint64_t>(clock_ticks));
     auto presenter = std::make_unique<CliMetricsPresenterImpl>(std::cout);
 
     return std::make_unique<MonitoringServiceImpl>(

@@ -236,10 +236,11 @@ TEST_F(MonitoringServiceImplTest, PresentsProcessesAfterCpuAndMemoryWithoutChang
         .WillOnce(testing::Return(ProcessSampleResult(processes)));
     EXPECT_CALL(*presenter_, presentCpuUsage(50.0));
     EXPECT_CALL(*presenter_, presentMemoryUsage(testing::_));
-    EXPECT_CALL(*presenter_,
-                presentProcesses(testing::ElementsAre(
-                    testing::FieldsAre(42, "pulse", 'R', std::optional<std::uint64_t>(1024)),
-                    testing::FieldsAre(7, "unknown", 'S', std::nullopt))));
+    EXPECT_CALL(
+        *presenter_,
+        presentProcesses(testing::ElementsAre(
+            testing::FieldsAre(42, "pulse", 'R', std::optional<std::uint64_t>(1024), std::nullopt),
+            testing::FieldsAre(7, "unknown", 'S', std::nullopt, std::nullopt))));
     MonitoringServiceImpl service(std::move(monitor_), std::move(memory_monitor_),
                                   std::move(process_monitor_), std::move(presenter_));
 
