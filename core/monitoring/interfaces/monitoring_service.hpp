@@ -16,7 +16,13 @@ enum class MonitoringError : std::uint8_t {
 
 class IMonitoringService {
    public:
+    IMonitoringService() = default;
     virtual ~IMonitoringService() = default;
+
+    IMonitoringService(const IMonitoringService&) = delete;
+    IMonitoringService& operator=(const IMonitoringService&) = delete;
+    IMonitoringService(IMonitoringService&&) = delete;
+    IMonitoringService& operator=(IMonitoringService&&) = delete;
 
     // Prints memory usage, processes, and CPU usage when available.
     // The first tick omits CPU usage because it needs two samples.

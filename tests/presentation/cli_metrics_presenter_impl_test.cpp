@@ -11,6 +11,25 @@
 namespace pulse {
 namespace {
 
+TEST(CliMetricsPresenterImplTest, BeginsFrameWithCursorHomeAndClearDisplay) {
+    constexpr double kCpuUsage = 25.0;
+    constexpr MemoryUsage kMemoryUsage{.used_kb = 1048576, .total_kb = 4194304, .percentage = 25.0};
+    std::ostringstream output;
+    CliMetricsPresenterImpl presenter(output);
+
+    presenter.beginFrame();
+    presenter.presentCpuUsage(kCpuUsage);
+    presenter.presentMemoryUsage(kMemoryUsage);
+    presenter.presentProcesses({});
+
+    EXPECT_EQ(output.str(),
+              "\033[H\033[2J"
+              "CPU Usage: 25.00%\n"
+              "Memory Usage: 1.00 / 4.00 GiB (25.00%)\n"
+              "\nTOP 0 PROCESSES BY MEMORY\n"
+              "PID       NAME                  STATE    CPU%       MEMORY\n");
+}
+
 TEST(CliMetricsPresenterImplTest, PresentsFractionalUsageWithLabelUnitAndNewline) {
     constexpr double kFractionalUsage = 42.5;
     std::ostringstream output;

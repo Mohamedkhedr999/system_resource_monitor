@@ -11,7 +11,13 @@ enum class MemoryReadError { FileReadFailed, InvalidData };
 
 class IMemoryReader {
    public:
+    IMemoryReader() = default;
     virtual ~IMemoryReader() = default;
+
+    IMemoryReader(const IMemoryReader&) = delete;
+    IMemoryReader& operator=(const IMemoryReader&) = delete;
+    IMemoryReader(IMemoryReader&&) = delete;
+    IMemoryReader& operator=(IMemoryReader&&) = delete;
 
     [[nodiscard]]
     virtual std::expected<MemoryStats, MemoryReadError> read() = 0;

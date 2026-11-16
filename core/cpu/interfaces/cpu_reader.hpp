@@ -13,7 +13,13 @@ enum class CpuReadError : std::uint8_t { FileOpenFailed, FileReadFailed, Invalid
 
 class ICpuReader {
    public:
+    ICpuReader() = default;
     virtual ~ICpuReader() = default;
+
+    ICpuReader(const ICpuReader&) = delete;
+    ICpuReader& operator=(const ICpuReader&) = delete;
+    ICpuReader(ICpuReader&&) = delete;
+    ICpuReader& operator=(ICpuReader&&) = delete;
 
     [[nodiscard]]
     virtual std::expected<CpuStats, CpuReadError> read() const = 0;

@@ -9,6 +9,8 @@ namespace pulse {
 CliMetricsPresenterImpl::CliMetricsPresenterImpl(std::ostream& output)
     : IMetricsPresenter(), output_(output) {}
 
+void CliMetricsPresenterImpl::beginFrame() { output_ << "\033[H\033[2J"; }
+
 void CliMetricsPresenterImpl::presentCpuUsage(double percentage) {
     output_ << std::fixed << std::setprecision(2) << "CPU Usage: " << percentage << "%\n";
 }

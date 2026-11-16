@@ -13,6 +13,7 @@ class CliMetricsPresenterImpl final : public IMetricsPresenter {
    public:
     explicit CliMetricsPresenterImpl(std::ostream& output);
 
+    void beginFrame() override;
     void presentCpuUsage(double percentage) override;
     void presentMemoryUsage(const MemoryUsage& usage) override;
     void presentProcesses(const std::vector<ProcessInfo>& processes) override;

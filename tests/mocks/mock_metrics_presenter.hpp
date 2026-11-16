@@ -8,6 +8,7 @@ namespace pulse {
 
 class MockMetricsPresenter : public IMetricsPresenter {
    public:
+    MOCK_METHOD(void, beginFrame, (), (override));
     MOCK_METHOD(void, presentCpuUsage, (double percentage), (override));
     MOCK_METHOD(void, presentMemoryUsage, (const MemoryUsage& usage), (override));
     MOCK_METHOD(void, presentProcesses, (const std::vector<ProcessInfo>& processes), (override));

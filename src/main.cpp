@@ -39,24 +39,25 @@ int main() {
         std::atomic<bool> signal_error{false};
 
         // Listen for shutdown signals in a background thread.
-        std::jthread signal_thread{[&signals, &signal_error, &stop_source](std::stop_token token) {
-            while (!token.stop_requested()) {
-                const timespec timeout{.tv_sec = 0, .tv_nsec = 100'000'000};
+        std::jthread signal_thread{
+            [&signals, &signal_error, &stop_source](const std::stop_token& token) {
+                while (!token.stop_requested()) {
+                    const timespec timeout{.tv_sec = 0, .tv_nsec = 100'000'000};
 
-                const int received_signal = sigtimedwait(&signals, nullptr, &timeout);
+                    const int received_signal = sigtimedwait(&signals, nullptr, &timeout);
 
-                if (received_signal == SIGINT || received_signal == SIGTERM) {
-                    stop_source.request_stop();
-                    break;
+                    if (received_signal == SIGINT || received_signal == SIGTERM) {
+                        stop_source.request_stop();
+                        break;
+                    }
+
+                    if (received_signal == -1 && errno != EAGAIN && errno != EINTR) {
+                        signal_error.store(true);
+                        stop_source.request_stop();
+                        break;
+                    }
                 }
-
-                if (received_signal == -1 && errno != EAGAIN && errno != EINTR) {
-                    signal_error.store(true);
-                    stop_source.request_stop();
-                    break;
-                }
-            }
-        }};
+            }};
 
         // Run monitoring on the main thread.
         const auto result = app.run(stop_source.get_token());

@@ -12,7 +12,13 @@ enum class MemoryMonitorError : std::uint8_t { ReadFailed, InvalidStats };
 
 class IMemoryMonitor {
    public:
+    IMemoryMonitor() = default;
     virtual ~IMemoryMonitor() = default;
+
+    IMemoryMonitor(const IMemoryMonitor&) = delete;
+    IMemoryMonitor& operator=(const IMemoryMonitor&) = delete;
+    IMemoryMonitor(IMemoryMonitor&&) = delete;
+    IMemoryMonitor& operator=(IMemoryMonitor&&) = delete;
 
     [[nodiscard]]
     virtual std::expected<MemoryUsage, MemoryMonitorError> sample() = 0;

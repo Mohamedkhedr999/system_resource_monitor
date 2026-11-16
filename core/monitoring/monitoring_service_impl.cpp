@@ -36,6 +36,7 @@ std::expected<void, MonitoringError> MonitoringServiceImpl::tick() {
     if (!processes) {
         return std::unexpected(MonitoringError::ProcessReadFailed);
     }
+    presenter_->beginFrame();
     if (usage->has_value()) {
         presenter_->presentCpuUsage(**usage);
     }

@@ -11,7 +11,13 @@ namespace pulse {
 
 class IProcessMonitor {
    public:
+    IProcessMonitor() = default;
     virtual ~IProcessMonitor() = default;
+
+    IProcessMonitor(const IProcessMonitor&) = delete;
+    IProcessMonitor& operator=(const IProcessMonitor&) = delete;
+    IProcessMonitor(IProcessMonitor&&) = delete;
+    IProcessMonitor& operator=(IProcessMonitor&&) = delete;
 
     [[nodiscard]]
     virtual std::expected<std::vector<ProcessInfo>, ProcessReadError> sample() = 0;

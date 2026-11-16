@@ -87,7 +87,9 @@ TEST_F(MonitoringServiceImplTest, PresentsEachAvailableSampleIncludingZero) {
         .WillOnce(testing::Return(SampleResult(std::optional<double>{kUsage})))
         .WillOnce(testing::Return(SampleResult(std::optional<double>{0.0})));
     testing::InSequence sequence;
+    EXPECT_CALL(*presenter_, beginFrame());
     EXPECT_CALL(*presenter_, presentCpuUsage(kUsage));
+    EXPECT_CALL(*presenter_, beginFrame());
     EXPECT_CALL(*presenter_, presentCpuUsage(0.0));
     MonitoringServiceImpl service(std::move(monitor_), std::move(memory_monitor_),
                                   std::move(process_monitor_), std::move(presenter_));
@@ -97,10 +99,15 @@ TEST_F(MonitoringServiceImplTest, PresentsEachAvailableSampleIncludingZero) {
 }
 
 TEST_F(MonitoringServiceImplTest, PresentsMemoryAndProcessesDuringCpuWarmUp) {
-    expectMemorySamples(1);
-    expectProcessSamples(1);
+    const MemoryUsage memory{.used_kb = 250, .total_kb = 1000, .percentage = 25.0};
+    testing::InSequence sequence;
     EXPECT_CALL(*monitor_, sample()).WillOnce(testing::Return(SampleResult(std::nullopt)));
+    EXPECT_CALL(*memory_monitor_, sample()).WillOnce(testing::Return(MemorySampleResult(memory)));
+    EXPECT_CALL(*process_monitor_, sample()).WillOnce(testing::Return(ProcessSampleResult{}));
     EXPECT_CALL(*presenter_, presentCpuUsage(testing::_)).Times(0);
+    EXPECT_CALL(*presenter_, beginFrame());
+    EXPECT_CALL(*presenter_, presentMemoryUsage(testing::_));
+    EXPECT_CALL(*presenter_, presentProcesses(testing::IsEmpty()));
     MonitoringServiceImpl service(std::move(monitor_), std::move(memory_monitor_),
                                   std::move(process_monitor_), std::move(presenter_));
 
@@ -108,6 +115,7 @@ TEST_F(MonitoringServiceImplTest, PresentsMemoryAndProcessesDuringCpuWarmUp) {
 }
 
 TEST_F(MonitoringServiceImplTest, ReturnsSamplingErrorsWithoutPresenting) {
+    EXPECT_CALL(*presenter_, beginFrame()).Times(0);
     EXPECT_CALL(*memory_monitor_, sample()).Times(0);
     EXPECT_CALL(*monitor_, sample())
         .WillOnce(testing::Return(SampleResult(std::unexpected(CpuMonitorError::ReadFailed))))
@@ -135,12 +143,14 @@ TEST_F(MonitoringServiceImplTest, ContinuesSamplingAfterFailureAndWarmUp) {
         .WillOnce(testing::Return(SampleResult(std::nullopt)))
         .WillOnce(testing::Return(SampleResult(std::optional<double>{kUsage})));
     EXPECT_CALL(*presenter_, presentCpuUsage(kUsage)).Times(1);
+    auto& presenter = *presenter_;
     MonitoringServiceImpl service(std::move(monitor_), std::move(memory_monitor_),
                                   std::move(process_monitor_), std::move(presenter_));
 
     const auto failure = service.tick();
     ASSERT_FALSE(failure.has_value());
     EXPECT_EQ(failure.error(), MonitoringError::CpuReadFailed);
+    EXPECT_CALL(presenter, beginFrame()).Times(2);
     EXPECT_TRUE(service.tick().has_value());
     EXPECT_TRUE(service.tick().has_value());
 }
@@ -155,6 +165,7 @@ class MonitoringServiceImplMemoryErrorTest : public MonitoringServiceImplTest,
 };
 
 TEST_P(MonitoringServiceImplMemoryErrorTest, ReturnsMemoryErrorWithoutPresentingEitherMetric) {
+    EXPECT_CALL(*presenter_, beginFrame()).Times(0);
     EXPECT_CALL(*monitor_, sample())
         .WillOnce(testing::Return(SampleResult(std::optional<double>{50.0})));
     EXPECT_CALL(*memory_monitor_, sample())
@@ -177,6 +188,7 @@ INSTANTIATE_TEST_SUITE_P(MemoryFailures, MonitoringServiceImplMemoryErrorTest,
                                                            MonitoringError::MemoryInvalidStats}));
 
 TEST_F(MonitoringServiceImplTest, ReturnsMemoryFailureDuringCpuWarmUp) {
+    EXPECT_CALL(*presenter_, beginFrame()).Times(0);
     EXPECT_CALL(*monitor_, sample()).WillOnce(testing::Return(SampleResult(std::nullopt)));
     EXPECT_CALL(*memory_monitor_, sample())
         .WillOnce(
@@ -208,6 +220,7 @@ TEST_F(MonitoringServiceImplTest, ContinuesSamplingAfterMemoryFailure) {
     ASSERT_FALSE(failure.has_value());
     EXPECT_EQ(failure.error(), MonitoringError::MemoryReadFailed);
 
+    EXPECT_CALL(*presenter, beginFrame());
     EXPECT_CALL(*presenter, presentCpuUsage(25.0));
     EXPECT_CALL(*presenter,
                 presentMemoryUsage(testing::AllOf(testing::Field(&MemoryUsage::used_kb, 250),
@@ -234,6 +247,7 @@ TEST_F(MonitoringServiceImplTest, PresentsProcessesAfterCpuAndMemoryWithoutChang
     EXPECT_CALL(*memory_monitor_, sample()).WillOnce(testing::Return(MemorySampleResult(memory)));
     EXPECT_CALL(*process_monitor_, sample())
         .WillOnce(testing::Return(ProcessSampleResult(processes)));
+    EXPECT_CALL(*presenter_, beginFrame());
     EXPECT_CALL(*presenter_, presentCpuUsage(50.0));
     EXPECT_CALL(*presenter_, presentMemoryUsage(testing::_));
     EXPECT_CALL(
@@ -272,6 +286,7 @@ TEST_P(MonitoringServiceImplProcessErrorTest, ReturnsProcessErrorWithoutOutputAn
     ASSERT_FALSE(failure.has_value());
     EXPECT_EQ(failure.error(), MonitoringError::ProcessReadFailed);
 
+    EXPECT_CALL(presenter, beginFrame());
     EXPECT_CALL(presenter, presentCpuUsage(25.0));
     EXPECT_CALL(presenter, presentMemoryUsage(testing::_));
     EXPECT_CALL(presenter, presentProcesses(testing::IsEmpty()));
