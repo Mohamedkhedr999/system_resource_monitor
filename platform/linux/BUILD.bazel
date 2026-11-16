@@ -1,0 +1,47 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "proc_process_reader_impl",
+    srcs = ["proc_process_reader_impl.cpp"],
+    hdrs = ["proc_process_reader_impl.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/io:file_reader",
+        "//core/process:process_cpu_stats_parser",
+        "//core/process:process_reader",
+        "//core/process:process_snapshot",
+        "//core/process:process_stats_parser",
+    ],
+)
+
+cc_library(
+    name = "proc_memory_reader_impl",
+    srcs = ["proc_memory_reader_impl.cpp"],
+    hdrs = ["proc_memory_reader_impl.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/io:file_reader",
+        "//core/memory:memory_reader",
+        "//core/memory:memory_stats_parser",
+    ],
+)
+
+cc_library(
+    name = "file_reader_impl",
+    srcs = ["file_reader_impl.cpp"],
+    hdrs = ["file_reader_impl.hpp"],
+    visibility = ["//visibility:public"],
+    deps = ["//core/io:file_reader"],
+)
+
+cc_library(
+    name = "proc_cpu_reader_impl",
+    srcs = ["proc_cpu_reader_impl.cpp"],
+    hdrs = ["proc_cpu_reader_impl.hpp"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core/cpu:cpu_reader",
+        "//core/cpu:cpu_stats_parser",
+        "//core/io:file_reader",
+    ],
+)

@@ -1,0 +1,11 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+cc_test(
+    name = "file_reader_test",
+    size = "small",
+    srcs = ["file_reader_test.cpp"],
+    deps = [
+        "//platform/linux:file_reader_impl",
+        "@googletest//:gtest_main",
+    ],
+)

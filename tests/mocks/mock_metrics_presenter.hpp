@@ -1,0 +1,19 @@
+#ifndef SYSTEM_RESOURCE_MONITOR_TESTS_MOCKS_MOCK_METRICS_PRESENTER_HPP
+#define SYSTEM_RESOURCE_MONITOR_TESTS_MOCKS_MOCK_METRICS_PRESENTER_HPP
+
+#include "core/monitoring/interfaces/metrics_presenter.hpp"
+#include "gmock/gmock.h"
+
+namespace pulse {
+
+class MockMetricsPresenter : public IMetricsPresenter {
+   public:
+    MOCK_METHOD(void, beginFrame, (), (override));
+    MOCK_METHOD(void, presentCpuUsage, (double percentage), (override));
+    MOCK_METHOD(void, presentMemoryUsage, (const MemoryUsage& usage), (override));
+    MOCK_METHOD(void, presentProcesses, (const std::vector<ProcessInfo>& processes), (override));
+};
+
+}  // namespace pulse
+
+#endif  // SYSTEM_RESOURCE_MONITOR_TESTS_MOCKS_MOCK_METRICS_PRESENTER_HPP

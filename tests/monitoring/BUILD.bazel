@@ -1,0 +1,21 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+cc_test(
+    name = "monitoring_service_impl_test",
+    size = "small",
+    srcs = ["monitoring_service_impl_test.cpp"],
+    deps = [
+        "//core/cpu:cpu_monitor_interface",
+        "//core/memory:memory_monitor_interface",
+        "//core/memory:memory_usage",
+        "//core/monitoring:monitoring_service_interface",
+        "//core/monitoring:monitoring_service_impl",
+        "//core/process:process_info",
+        "//core/process:process_reader",
+        "//tests/mocks:mock_cpu_monitor",
+        "//tests/mocks:mock_memory_monitor",
+        "//tests/mocks:mock_metrics_presenter",
+        "//tests/mocks:mock_process_monitor",
+        "@googletest//:gtest_main",
+    ],
+)

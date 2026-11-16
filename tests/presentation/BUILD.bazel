@@ -1,0 +1,12 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+cc_test(
+    name = "cli_metrics_presenter_impl_test",
+    size = "small",
+    srcs = ["cli_metrics_presenter_impl_test.cpp"],
+    deps = [
+        "//core/process:process_info",
+        "//presentation/cli:cli_metrics_presenter_impl",
+        "@googletest//:gtest_main",
+    ],
+)

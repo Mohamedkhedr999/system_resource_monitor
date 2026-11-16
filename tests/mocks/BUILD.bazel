@@ -1,0 +1,100 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "mock_process_reader",
+    testonly = True,
+    hdrs = ["mock_process_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/process:process_reader",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_process_monitor",
+    testonly = True,
+    hdrs = ["mock_process_monitor.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/process:process_monitor_interface",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_memory_reader",
+    testonly = True,
+    hdrs = ["mock_memory_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/memory:memory_reader",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_monitoring_service",
+    testonly = True,
+    hdrs = ["mock_monitoring_service.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/monitoring:monitoring_service_interface",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_metrics_presenter",
+    testonly = True,
+    hdrs = ["mock_metrics_presenter.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/monitoring:metrics_presenter",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_cpu_monitor",
+    testonly = True,
+    hdrs = ["mock_cpu_monitor.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/cpu:cpu_monitor_interface",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_cpu_reader",
+    testonly = True,
+    hdrs = ["mock_cpu_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/cpu:cpu_reader",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_file_reader",
+    testonly = True,
+    hdrs = ["mock_file_reader.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/io:file_reader",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "mock_memory_monitor",
+    testonly = True,
+    hdrs = ["mock_memory_monitor.hpp"],
+    visibility = ["//tests:__subpackages__"],
+    deps = [
+        "//core/memory:memory_monitor_interface",
+        "@googletest//:gtest",
+    ],
+)
